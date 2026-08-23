@@ -580,6 +580,13 @@
     .topbar .ghost-button { border-color: rgba(255,255,255,.7); color: #ffffff; }
     .topbar .ghost-button:hover, .topbar .ghost-button:active { border-color: #ffffff; color: var(--signal); background: #ffffff; }
     .workspace, .side-panel, .start-panel { overflow: hidden; border-color: var(--line-strong); border-radius: 20px; }
+    .start-panel {
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
     .section-head, .trade-column-head, .staff-column > h3 { background: var(--panel-2); }
     .archive-notice, .league-banner, .standing-row.user,
     .need-line, .tactic-note { background: var(--signal-soft); }
@@ -667,6 +674,21 @@
     }
 
     @media (max-width: 560px) {
+      body { overscroll-behavior-y: auto; }
+      .start-screen {
+        display: block;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 10px 10px calc(144px + var(--safe-bottom));
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+      }
+      .start-panel {
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+      }
       .app { padding-left: 10px; padding-right: 10px; }
       .topbar { grid-template-columns: 1fr; margin: -14px -10px 14px; padding: 20px 14px 18px; }
       .topbar .ghost-button { display: none; }
