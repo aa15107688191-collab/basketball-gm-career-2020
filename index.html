@@ -656,6 +656,38 @@
     .draft-board { overflow: hidden; }
     .draft-board .prospect { border-radius: 0; }
 
+    .guided-plan {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, #fffaf3, var(--panel-2));
+    }
+    .guided-plan-head { display: flex; justify-content: space-between; gap: 12px; align-items: end; margin-bottom: 12px; }
+    .guided-plan-head strong { font-size: 16px; }
+    .guided-plan-head span { color: var(--muted); font-size: 10px; }
+    .guided-steps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+    .guided-step { min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: #ffffff; }
+    .guided-step.done { background: #f3f7ef; border-color: #b9c7ac; }
+    .guided-step.current { border-color: var(--signal); box-shadow: inset 0 3px 0 var(--signal); }
+    .guided-step-label { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--signal); font-size: 10px; font-weight: 800; }
+    .guided-step h3 { margin: 0 0 6px; font-size: 14px; }
+    .guided-step p { min-height: 38px; margin: 0 0 11px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .guided-step button { width: 100%; min-height: 42px; }
+    .guided-tip { margin-top: 10px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .season-details-toggle { grid-column: 1 / -1; }
+    .season-details.is-collapsed { display: none; }
+    .market-tools { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+    .market-tools div { min-width: 0; }
+    .market-tools strong, .market-tools span { display: block; }
+    .market-tools strong { margin-bottom: 4px; font-size: 12px; }
+    .market-tools span { color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .market-tools button { flex: 0 0 auto; }
+    .recommend-badge { display: inline-block; width: fit-content; margin-top: 5px; padding: 2px 6px; border-radius: 999px; color: #ffffff !important; background: var(--success); font-size: 9px !important; }
+    .trade-helper { padding: 12px; border-bottom: 1px solid var(--line); background: var(--signal-soft); }
+    .trade-helper strong, .trade-helper span { display: block; }
+    .trade-helper strong { margin-bottom: 5px; font-size: 12px; }
+    .trade-helper span { margin-bottom: 10px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .trade-helper button { width: auto; min-height: 42px; }
+
     @media (max-width: 820px) {
       .ticker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .main-grid { grid-template-columns: minmax(0, 1fr); }
@@ -786,6 +818,12 @@
       .staff-hero { grid-template-columns: 1fr; }
       .staff-brief { border-right: 0; border-bottom: 1px solid var(--line); }
       .staff-control { grid-template-columns: 1fr; }
+      .guided-plan { padding: 12px; }
+      .guided-plan-head { align-items: start; flex-direction: column; }
+      .guided-steps { grid-template-columns: 1fr; }
+      .guided-step p { min-height: 0; }
+      .market-tools { align-items: stretch; flex-direction: column; }
+      .market-tools button { width: 100%; min-height: 44px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -807,7 +845,7 @@
       <div class="start-step" id="teamStep">
         <div class="step-head"><span>选择球队</span><span id="chosenEraLabel">2020现役联盟</span><button class="ghost-button" id="backToEra" hidden>返回</button></div>
         <div class="team-filter" id="teamFilter">
-          <button class="active" data-team-filter="all" aria-pressed="true">全部</button><button data-team-filter="east" aria-pressed="false">东部</button><button data-team-filter="west" aria-pressed="false">西部</button><button data-team-filter="contender" aria-pressed="false">争冠</button><button data-team-filter="rebuild" aria-pressed="false">重建</button>
+          <button class="active" data-team-filter="featured" aria-pressed="true">推荐</button><button data-team-filter="all" aria-pressed="false">全部</button><button data-team-filter="east" aria-pressed="false">东部</button><button data-team-filter="west" aria-pressed="false">西部</button><button data-team-filter="rebuild" aria-pressed="false">重建</button>
           <input id="teamSearch" type="search" placeholder="搜索球队" aria-label="搜索球队">
         </div>
         <div class="team-choices" id="teamChoices"></div>
@@ -860,6 +898,11 @@
 
         <div class="view active" id="view-season">
           <div class="section-head"><h2 class="section-title">赛季中心</h2><span class="section-meta" id="seasonMeta">训练营准备中</span></div>
+          <section class="guided-plan" aria-labelledby="guidedPlanTitle">
+            <div class="guided-plan-head"><strong id="guidedPlanTitle">本阶段行动计划</strong><span>按顺序完成即可，也可以直接推进</span></div>
+            <div class="guided-steps" id="guidedSteps"></div>
+            <div class="guided-tip" id="guidedTip"></div>
+          </section>
           <div class="season-hero">
             <section class="season-scoreboard">
               <div class="season-kicker" id="seasonPhase">FRONT OFFICE / 休赛期</div>
@@ -872,7 +915,9 @@
           <div class="season-actions">
             <button class="primary-button" id="seasonAdvanceButton">开始常规赛</button>
             <button class="ghost-button" id="seasonCareerButton">查看经理履历</button>
+            <button class="ghost-button season-details-toggle" id="seasonDetailsButton" aria-expanded="false" aria-controls="seasonDetails">展开详细管理</button>
           </div>
+          <div class="season-details is-collapsed" id="seasonDetails">
           <div class="season-grid">
             <div class="season-main">
               <section class="season-panel"><h3>最近比赛 / LAST FIVE</h3><div id="recentGames"></div></section>
@@ -884,6 +929,7 @@
               <section class="season-panel"><h3>伤病报告 / INJURY REPORT</h3><div id="injuryReport"></div></section>
               <section class="season-panel"><h3>球队动态 / TEAM WIRE</h3><ul class="season-news" id="seasonNews"></ul></section>
             </aside>
+          </div>
           </div>
         </div>
 
@@ -917,6 +963,7 @@
 
         <div class="view" id="view-trade">
           <div class="section-head"><h2 class="section-title">交易中心</h2><span class="section-meta" id="tradeMeta">最多打包2名球员与1枚首轮签</span></div>
+          <div class="trade-helper"><strong>不想自己拼筹码？</strong><span>系统会寻找一组价值接近、符合球队短板的现实可行方案，你仍需自行提交确认。</span><button class="ghost-button" id="recommendTradeButton">生成推荐方案</button></div>
           <div class="trade-center">
             <section class="trade-column">
               <div class="trade-column-head"><h3 id="tradeUserTeam">你的筹码</h3><span>选择送出的球员或未来首轮签</span></div>
@@ -942,6 +989,7 @@
 
         <div class="view" id="view-market">
           <div class="section-head"><h2 class="section-title">自由球员</h2><span class="section-meta" id="marketMeta">现实球员为主 · 签约消耗1次操作</span></div>
+          <div class="market-tools"><div><strong id="marketGuideTitle">优先显示球队适配人选</strong><span id="marketGuideText">综合位置短板、能力和薪资筛选。</span></div><button class="ghost-button" id="marketToggleButton">查看全部球员</button></div>
           <div class="market-list" id="marketList"></div>
         </div>
 
@@ -1354,8 +1402,11 @@
     let state = null;
     let toastTimer = null;
     let pendingEra = null;
-    let activeTeamFilter = 'all';
+    let activeTeamFilter = 'featured';
     let modalReturnFocus = null;
+    let showAllMarketPlayers = false;
+    let seasonDetailsExpanded = false;
+    let quickSimulationRunning = false;
     const usedNames = new Set();
 
     const $ = (selector) => document.querySelector(selector);
@@ -2129,8 +2180,8 @@
       $('#titleMetric').textContent = state.titles;
       $('#objectiveText').textContent = `老板目标：至少赢下 ${state.objective} 场`;
       $('#objectiveNote').textContent = state.status === 'regular'
-        ? `比赛实力 ${Math.round(seasonTeamRating())}；交易窗口${transactionsOpen() ? `开放，还可完成 ${state.actions} 次操作` : '已经关闭'}。`
-        : state.status === 'offseason' ? `球队预计实力 ${Math.round(seasonTeamRating())}；本休赛期还可完成 ${state.actions} 次操作。` : `赛季操作已锁定；请在赛季中心推进当前阶段。`;
+        ? `比赛实力 ${Math.round(seasonTeamRating())}；交易窗口${transactionsOpen() ? `开放，还可完成 ${state.actions} 次签约或交易` : '已经关闭'}。`
+        : state.status === 'offseason' ? `球队预计实力 ${Math.round(seasonTeamRating())}；签约、交易、选秀或换教练会消耗操作，轮换与战术免费。` : `赛季操作已锁定；请在赛季中心推进当前阶段。`;
       $('#teamMark').innerHTML = teamAvatarMarkup(state.team);
       $('#teamName').textContent = state.team.name;
       $('#teamSub').textContent = `总经理第 ${state.gmYear} 年 · ${state.fired} 次换队`;
@@ -2153,6 +2204,68 @@
       renderSeason(primaryText); renderDashboard(); renderRoster(); renderStaff(); renderTradeCenter(); renderMarket(); renderDraft(); renderLeague(); renderCareer();
     }
 
+    function recommendedMarketPlayers() {
+      const rotation=[...state.roster].sort((a,b)=>b.ovr-a.ovr).slice(0,8);
+      const positionCounts=positions.reduce((map,pos)=>({...map,[pos]:state.roster.filter(p=>p.position===pos).length}),{});
+      return [...state.market].sort((a,b)=>{
+        const score=p=>(p.realFreeAgent?10:0)+(capRoom()>=p.salary?14:0)+(positionCounts[p.position]===0?28:positionCounts[p.position]===1?10:0)+p.ovr*1.2-p.salary*.35+(rotation.length<8?8:0);
+        return score(b)-score(a);
+      });
+    }
+
+    function setSeasonDetails(expanded,scroll=false) {
+      seasonDetailsExpanded=expanded;
+      $('#seasonDetails').classList.toggle('is-collapsed',!expanded);
+      $('#seasonDetailsButton').setAttribute('aria-expanded',String(expanded));
+      $('#seasonDetailsButton').textContent=expanded?'收起详细管理':'展开详细管理';
+      if (expanded&&scroll) $('#seasonDetails').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    }
+
+    function autoSetRotation() {
+      state.rotationOrder=[...state.roster].sort((a,b)=>b.ovr-a.ovr||b.potential-a.potential).map(p=>p.id);
+      state.tactics={pace:'balanced',offense:'balanced',defense:'switch'};
+      state.lastResult='<strong>自动方案已应用</strong><br>轮换按当前能力排序，战术使用稳健的均衡配置。你可以在详细管理中继续微调。';
+      save(false);render();showToast('自动轮换与战术已设置');
+    }
+
+    function renderGuidedPlan(primaryText) {
+      const games=state.season?.gamesPlayed||0;
+      const recommended=recommendedMarketPlayers().find(p=>capRoom()>=p.salary);
+      let steps=[];
+      let tip='基础操作不会强迫你阅读全部数据；轮换、战术、更衣室和伤病都在“详细管理”中。';
+      if (state.status==='offseason') {
+        steps=[
+          {state:'done',label:'第1步 · 已就绪',title:'自动安排轮换',copy:`已按能力生成${Math.min(8,state.roster.length)}人轮换，想省事可以直接沿用。`,button:'重新自动安排',id:'guideAutoRotation'},
+          {state:recommended&&state.actions>0?'current':'done',label:`第2步 · ${state.actions}次操作`,title:'选择一次补强',copy:recommended?`推荐关注${recommended.name}（${recommended.position}，${recommended.ovr}），签约后再开赛。`:'当前没有薪资可承受的推荐球员，可以跳过补强。',button:recommended?'查看推荐球员':'查看球队阵容',id:recommended?'guideMarket':'guideRoster'},
+          {state:'current',label:'第3步 · 核心推进',title:'开始常规赛',copy:'不需要完成所有管理项目，随时可以进入赛季。',button:primaryText,id:'guideAdvance'}
+        ];
+      } else if (state.status==='regular') {
+        steps=[
+          {state:'done',label:`当前 · ${state.wins}-${state.losses}`,title:'查看球队状态',copy:`已进行${games}场，球队实力${Math.round(seasonTeamRating())}，老板目标${state.objective}胜。`,button:'查看详细数据',id:'guideDetails'},
+          {state:games>=55?'done':'current',label:'关键节点',title:'推进到交易截止日',copy:games>=55?'交易截止日已经过去，阵容操作锁定。':`一次模拟到第55场，中途仍会计算伤病、训练和更衣室变化。`,button:games>=55?'已到截止日':'模拟到截止日',id:'guideDeadline',disabled:games>=55},
+          {state:'current',label:'快速完成',title:'模拟到常规赛结束',copy:'直接完成剩余比赛，赛季数据和事件仍会正常结算。',button:'模拟到赛季末',id:'guideSeason'}
+        ];
+        tip='想逐周观察变化，仍可使用下方“推进下一周”；想快速体验生涯，就使用关键节点模拟。';
+      } else {
+        steps=[
+          {state:'done',label:'赛季结果',title:'查看本季总结',copy:`当前阶段：${state.status==='playoffs'?'季后赛':'赛季结算'}。`,button:'查看联盟战报',id:'guideLeague'},
+          {state:'done',label:'长期记录',title:'查看经理履历',copy:`生涯累计${state.totalWins}胜、${state.titles}次冠军。`,button:'查看履历',id:'guideCareer'},
+          {state:'current',label:'下一步',title:primaryText,copy:'完成当前阶段后进入下一年的球队经营。',button:primaryText,id:'guideAdvance'}
+        ];
+      }
+      $('#guidedSteps').innerHTML=steps.map((step,index)=>`<article class="guided-step ${step.state}"><div class="guided-step-label"><span>${step.label}</span><span>${step.state==='done'?'✓':''}</span></div><h3>${step.title}</h3><p>${step.copy}</p><button class="${step.state==='current'?'primary-button':'ghost-button'}" id="${step.id}" ${step.disabled?'disabled':''}>${step.button}</button></article>`).join('');
+      $('#guidedTip').textContent=tip;
+      $('#guideAutoRotation')?.addEventListener('click',autoSetRotation);
+      $('#guideMarket')?.addEventListener('click',()=>{showAllMarketPlayers=false;switchView('market');});
+      $('#guideRoster')?.addEventListener('click',()=>switchView('roster'));
+      $('#guideAdvance')?.addEventListener('click',simulateSeason);
+      $('#guideDetails')?.addEventListener('click',()=>setSeasonDetails(true,true));
+      $('#guideDeadline')?.addEventListener('click',()=>simulateToGame(55));
+      $('#guideSeason')?.addEventListener('click',()=>simulateToGame(82));
+      $('#guideLeague')?.addEventListener('click',()=>switchView('league'));
+      $('#guideCareer')?.addEventListener('click',()=>switchView('career'));
+    }
+
     function renderSeason(primaryText) {
       const season = state.season;
       const games = season?.gamesPlayed || 0;
@@ -2171,6 +2284,8 @@
         <div><span>可用操作</span><b>${transactionsOpen() ? state.actions : 0}</b></div>
         <div><span>健康球员</span><b>${state.roster.filter(p => !(season?.playerStats?.[p.id]?.injuryWeeks > 0)).length}/${state.roster.length}</b></div>`;
       $('#seasonAdvanceButton').textContent = primaryText;
+      renderGuidedPlan(primaryText);
+      setSeasonDetails(seasonDetailsExpanded);
       $('#recentGames').innerHTML = season?.recentGames?.length ? `<div class="game-strip">${season.recentGames.map(g => `<article class="game-card ${g.win ? 'win' : 'loss'}"><b>${g.win ? 'W' : 'L'} ${g.for}-${g.against}</b><span>${g.opponent}</span><span>第${g.game}场</span></article>`).join('')}</div>` : '<div class="season-empty">开始常规赛并推进一周后，这里会出现真实比分、对手和胜负走势。</div>';
       const players = rotationPlayers();
       $('#seasonRotationBody').innerHTML = players.map((p,index) => {
@@ -2370,6 +2485,35 @@
       save(false); render();
     }
 
+    function recommendTradePackage() {
+      if (!transactionsOpen()||state.actions<1) return showToast('当前交易窗口不可用');
+      const original={...state.tradeCenter,offerIds:[...state.tradeCenter.offerIds],targetIds:[...state.tradeCenter.targetIds]};
+      const coreIds=new Set(rotationPlayers().slice(0,2).map(p=>p.id));
+      const userCandidates=[...state.roster].filter(p=>!coreIds.has(p.id)).sort((a,b)=>a.ovr-b.ovr).slice(0,6);
+      const starters=rosterInsights().starters.filter(Boolean).sort((a,b)=>a.ovr-b.ovr);
+      const needPosition=starters[0]?.position;
+      let best=null;
+      state.aiTeams.forEach(team=>{
+        const teamCore=new Set([...team.roster].sort((a,b)=>b.ovr-a.ovr).slice(0,2).map(p=>p.id));
+        const targets=[...team.roster].filter(p=>!teamCore.has(p.id)).sort((a,b)=>(b.position===needPosition)-(a.position===needPosition)||b.ovr-a.ovr).slice(0,7);
+        userCandidates.forEach(offer=>targets.forEach(target=>{
+          if (target.ovr<offer.ovr+1) return;
+          const salaryGap=target.salary-offer.salary;
+          if (salaryGap>capRoom()&&target.salary>offer.salary*1.25+.1) return;
+          state.tradeCenter={teamId:team.id,offerIds:[offer.id],targetIds:[target.id],offerPick:false,targetPick:false,offerPickProtection:'unprotected',targetPickProtection:'unprotected',response:null};
+          const evaluation=tradeEvaluation();
+          if (!evaluation.valid||evaluation.delta<0) return;
+          const fitBonus=target.position===needPosition?8:0;
+          const score=(target.ovr-offer.ovr)*3+fitBonus-Math.abs(evaluation.delta);
+          if (!best||score>best.score) best={score,center:{...state.tradeCenter,offerIds:[offer.id],targetIds:[target.id]},offer,target,team,evaluation};
+        }));
+      });
+      if (!best) { state.tradeCenter=original; render(); return showToast('暂时没有找到价值接近的单人交易方案'); }
+      state.tradeCenter=best.center;
+      state.lastResult=`<strong>交易助手建议</strong><br>尝试用${best.offer.name}换取${best.team.name}的${best.target.name}，预计补强${best.target.position}位置。提交前仍可调整筹码。`;
+      save(false);render();showToast('已生成一组推荐交易方案');
+    }
+
     function submitTradeOffer() {
       if (!transactionsOpen()) return showToast('当前交易窗口已经关闭。');
       if (state.actions<1) return showToast('本阶段已经没有操作次数。');
@@ -2419,9 +2563,17 @@
     function packageTextForResult(players,pick,protection='unprotected') { return [...players.map(p=>p.name),...(pick?[`1枚${pickProtectionLabel(protection)}未来首轮签`]:[])].join('、'); }
 
     function renderMarket() {
-      $('#marketList').innerHTML = state.market.length ? state.market.map(p => `
+      const ranked=recommendedMarketPlayers();
+      const recommendedIds=new Set(ranked.slice(0,5).map(p=>p.id));
+      const remainder=state.market.filter(p=>!recommendedIds.has(p.id)).sort((a,b)=>(b.realFreeAgent-a.realFreeAgent)||b.ovr-a.ovr);
+      const displayPlayers=showAllMarketPlayers?[...ranked.slice(0,5),...remainder]:ranked.slice(0,5);
+      $('#marketGuideTitle').textContent=showAllMarketPlayers?'全部自由球员':'球队适配推荐';
+      const affordableCount=ranked.filter(p=>capRoom()>=p.salary).length;
+      $('#marketGuideText').textContent=affordableCount?`优先考虑位置短板、现实球员身份、能力和当前薪资空间 ${money(capRoom())}。`:`当前薪资空间 ${money(capRoom())}，推荐名单可用于比较，但需要先腾出空间。`;
+      $('#marketToggleButton').textContent=showAllMarketPlayers?'只看推荐':'查看全部球员';
+      $('#marketList').innerHTML = displayPlayers.length ? displayPlayers.map(p => `
         <div class="market-row">
-          <div class="market-main player-identity">${playerAvatarMarkup(p)}<div class="player-identity-copy"><button class="name-button" data-market-details="${p.id}">${p.name}</button><span>${p.position} · ${p.role}</span><span class="market-origin ${p.realFreeAgent ? '' : 'virtual'}">${p.realFreeAgent ? (p.simulatedContract ? '现实球员 · 合同模拟' : '现实自由球员') : '虚拟补充球员'}</span></div></div>
+          <div class="market-main player-identity">${playerAvatarMarkup(p)}<div class="player-identity-copy"><button class="name-button" data-market-details="${p.id}">${p.name}</button><span>${p.position} · ${p.role}</span><span class="market-origin ${p.realFreeAgent ? '' : 'virtual'}">${p.realFreeAgent ? (p.simulatedContract ? '现实球员 · 合同模拟' : '现实自由球员') : '虚拟补充球员'}</span>${recommendedIds.has(p.id)?'<span class="recommend-badge">适配推荐</span>':''}</div></div>
           <div class="market-cell"><span>年龄</span><b>${p.age}</b></div>
           <div class="market-cell"><span>能力</span><b>${p.ovr}</b></div>
           <div class="market-cell"><span>报价</span><b>${money(p.salary)}</b></div>
@@ -2430,6 +2582,7 @@
         </div>`).join('') : '<div class="career-empty">自由市场已经没有合适球员。</div>';
       $$('[data-sign]').forEach(btn => btn.addEventListener('click', () => signPlayer(btn.dataset.sign)));
       $$('[data-market-details]').forEach(btn => btn.addEventListener('click', () => showPlayerDetails(btn.dataset.marketDetails)));
+      $('#marketToggleButton').onclick=()=>{showAllMarketPlayers=!showAllMarketPlayers;renderMarket();};
     }
 
     function renderDraft() {
@@ -2761,7 +2914,7 @@
       save(false); render(); switchView('season'); showToast('常规赛已经开始');
     }
 
-    function simulateWeek() {
+    function simulateWeek(renderAfter=true) {
       const season = state.season;
       if (!season || season.gamesPlayed >= 82) return finalizeRegularSeason();
       season.week++;
@@ -2824,7 +2977,19 @@
       state.wins=season.wins; state.losses=season.losses;
       state.lastResult = `<strong>第${season.week}周完成</strong><br>本周${weekWins}胜${gamesThisWeek-weekWins}负，当前${season.wins}胜${season.losses}负。${injuries.length ? `<br>${injuries.join('')}` : ''}${lockerMessages.length?`<br>${lockerMessages.join('')}`:''}${trainingMessages.length?`<br>${trainingMessages.join('')}`:''}`;
       if (season.gamesPlayed >= 82) finalizeRegularSeason();
-      else { save(false); render(); }
+      else if (renderAfter) { save(false); render(); }
+    }
+
+    function simulateToGame(targetGames) {
+      if (quickSimulationRunning||state.status!=='regular'||!state.season) return;
+      quickSimulationRunning=true;
+      const startGames=state.season.gamesPlayed;
+      try {
+        while (state.status==='regular'&&state.season.gamesPlayed<targetGames) simulateWeek(false);
+        if (state.status==='regular') { save(false);render(); }
+        const completed=Math.max(0,(state.season?.gamesPlayed||0)-startGames);
+        showToast(`已快速模拟 ${completed} 场比赛`);
+      } finally { quickSimulationRunning=false; }
     }
 
     function applyWeeklyTraining() {
@@ -3127,9 +3292,10 @@
 
     function renderTeamChoices() {
       const query=($('#teamSearch')?.value||'').trim().toLowerCase();
+      const featuredIds=new Set(['lal','gsw','bkn','bos','dal','okc']);
       const filtered=teams.filter(team=>{
         const conference=franchiseInfo(team.id).conference;
-        const categoryMatch=activeTeamFilter==='all'||(activeTeamFilter==='east'&&conference==='东部')||(activeTeamFilter==='west'&&conference==='西部')||(activeTeamFilter==='contender'&&team.base>=84)||(activeTeamFilter==='rebuild'&&team.base<=78);
+        const categoryMatch=activeTeamFilter==='all'||(activeTeamFilter==='featured'&&featuredIds.has(team.id))||(activeTeamFilter==='east'&&conference==='东部')||(activeTeamFilter==='west'&&conference==='西部')||(activeTeamFilter==='rebuild'&&team.base<=78);
         return categoryMatch&&(!query||team.name.toLowerCase().includes(query)||team.mark.toLowerCase().includes(query));
       });
       $('#teamChoices').innerHTML=filtered.length?filtered.map(t=>`<button class="team-choice" data-team="${t.id}"><span class="team-mark">${teamAvatarMarkup(t)}</span><strong>${t.name}</strong><span>${t.note}</span><span class="difficulty">难度：${t.difficulty}</span></button>`).join(''):'<div class="career-empty">没有匹配的球队。</div>';
@@ -3153,6 +3319,8 @@
       $('#simulateButton').addEventListener('click', simulateSeason);
       $('#seasonAdvanceButton').addEventListener('click', simulateSeason);
       $('#seasonCareerButton').addEventListener('click', () => switchView('career'));
+      $('#seasonDetailsButton').addEventListener('click',()=>setSeasonDetails(!seasonDetailsExpanded,true));
+      $('#recommendTradeButton').addEventListener('click',recommendTradePackage);
       $('#tradeSubmitButton').addEventListener('click', submitTradeOffer);
       $('#mobileTradeSubmitButton').addEventListener('click', submitTradeOffer);
       $('#tradeClearButton').addEventListener('click', clearTradeCenter);
