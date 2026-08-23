@@ -112,8 +112,9 @@
     .wire-date { color: var(--signal); }
     .objective { margin: 0 0 6px; font-size: 14px; }
     .objective-note { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-    .action-dots { display: flex; gap: 7px; }
-    .action-dot { width: 18px; height: 18px; border: 1px solid var(--signal); background: var(--signal); }
+    .action-dots { display: flex; gap: 7px; align-items: center; }
+    .action-count { margin-right: 3px; color: currentColor; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .action-dot { width: 9px; height: 9px; border: 1px solid var(--signal); border-radius: 999px; background: var(--signal); }
     .action-dot.used { background: transparent; border-color: var(--line); }
 
     .main-grid { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 16px; }
@@ -223,6 +224,13 @@
     .primary-button:hover, .primary-button:active { background: #ffd05a; }
     .primary-button:disabled { color: #61635c; background: #252720; border-color: #35372f; cursor: not-allowed; }
     .danger-button { border-color: var(--danger); color: var(--danger); background: transparent; }
+    .primary-button.danger-button {
+      border-color: var(--danger);
+      color: #ffffff;
+      background: var(--danger);
+    }
+    .primary-button.danger-button:hover,
+    .primary-button.danger-button:active { background: #9f2f29; }
 
     .career-feed { margin: 0; padding: 0; list-style: none; }
     .career-item { display: grid; grid-template-columns: 72px 1fr; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #23251f; font-size: 12px; line-height: 1.5; }
@@ -592,6 +600,7 @@
     .need-line, .tactic-note { background: var(--signal-soft); }
     .command-strip { border-color: var(--signal); color: #ffffff; background: var(--signal); }
     .command-strip .objective-note { color: #f8eadf; }
+    .command-strip .action-count { color: #ffffff; }
     .command-strip .action-dot { border-color: #ffffff; background: #ffffff; }
     .command-strip .action-dot.used { border-color: rgba(255,255,255,.65); background: transparent; }
     .wire-strip { background: var(--panel); }
@@ -2138,7 +2147,7 @@
       const realMarketCount = state.market.filter(p => p.realFreeAgent).length;
       $('#marketMeta').textContent = `${realMarketCount}名现实球员 · ${state.market.length-realMarketCount}名虚拟补充 · ${transactionsOpen() ? '签约消耗1次操作' : '交易窗口已关闭'}`;
       $('#careerMeta').textContent = `${state.totalWins}胜 · ${state.titles}冠`;
-      $('#actionDots').innerHTML = [0,1,2].map(i => `<span class="action-dot ${i < state.actions ? '' : 'used'}"></span>`).join('');
+      $('#actionDots').innerHTML = `<span class="action-count">剩余 ${state.actions} 次</span>${[0,1,2].map(i => `<span class="action-dot ${i < state.actions ? '' : 'used'}" aria-hidden="true"></span>`).join('')}`;
       const primaryText = state.seasonsPlayed >= CAREER_LENGTH ? '查看最终评价' : state.status === 'regular' ? '推进下一周' : state.status === 'playoffs' ? '模拟季后赛' : state.status === 'season_complete' ? '进入休赛期' : state.roster.length < 7 ? '补齐阵容并开始赛季' : '开始常规赛';
       $('#simulateButton').textContent = primaryText;
       renderSeason(primaryText); renderDashboard(); renderRoster(); renderStaff(); renderTradeCenter(); renderMarket(); renderDraft(); renderLeague(); renderCareer();
