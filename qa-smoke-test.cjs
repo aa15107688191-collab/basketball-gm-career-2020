@@ -169,6 +169,29 @@ const tests = String.raw`
     assert(state.story.queue.some(item => item.id === 'deadline'), '交易截止日前事件没有进入队列');
   });
 
+  test('球队路线、管理层收件箱与合同谈判形成总经理闭环', () => {
+    state = newState(teams.find(team => team.id === 'chi'), eras[0]);
+    const objectiveBefore = state.objective;
+    setTeamDirection('rebuild', false);
+    assert(state.frontOffice.direction === 'rebuild' && state.frontOffice.directionYear === state.year, '球队路线没有写入赛季状态');
+    assert(state.objective === clamp(objectiveBefore - 7, 24, 58), '重建路线没有调整老板目标');
+    assert(state.frontOffice.inbox.length > 0 && state.frontOffice.phaseKey, '管理层收件箱没有生成消息');
+
+    const player = state.roster.find(item => item.years === 1) || state.roster[0];
+    player.years = 1; player.salary = 1; player.morale = 95; player.personality = 'professional';
+    const actionsBefore = state.actions;
+    const originalRandom = Math.random;
+    Math.random = () => 0;
+    submitContractPackage(player.id, 'player', null);
+    Math.random = originalRandom;
+    assert(player.years === 4 && player.salary > 1 && player.rolePromise, '球员优先报价没有完成续约');
+    assert(state.actions === actionsBefore - 1, '续约谈判没有消耗操作次数');
+
+    state.status = 'regular'; state.frontOffice = {direction:null,directionYear:null,inbox:[],resolved:[],phaseKey:null,version:1};
+    ensureFrontOfficeState();
+    assert(state.frontOffice.direction === 'flexible' && state.frontOffice.directionYear === state.year, '旧赛季存档没有迁移到默认路线');
+  });
+
   test('完整30赛季生涯模拟无状态中断', () => {
     state = newState(teams.find(team => team.id === 'bos'), eras[0]);
     state.patience = 100;
