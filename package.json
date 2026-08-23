@@ -1,0 +1,9 @@
+{
+  "name": "gm-career-prototype",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node build.cjs",
+    "test": "node qa-smoke-test.cjs"
+  }
+}
