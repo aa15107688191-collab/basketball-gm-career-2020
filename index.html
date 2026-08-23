@@ -673,6 +673,20 @@
     .guided-step p { min-height: 38px; margin: 0 0 11px; color: var(--muted); font-size: 10px; line-height: 1.55; }
     .guided-step button { width: 100%; min-height: 42px; }
     .guided-tip { margin-top: 10px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .story-event { margin-top: 12px; overflow: hidden; border: 1px solid var(--signal); border-radius: 16px; background: #ffffff; box-shadow: 0 10px 28px rgba(112,65,37,.09); }
+    .story-event[hidden] { display: none; }
+    .story-event-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 13px; color: #ffffff; background: var(--signal); }
+    .story-event-head span { font-size: 10px; letter-spacing: .08em; }
+    .story-event-head b { font-size: 10px; }
+    .story-event-body { padding: 14px; }
+    .story-event-body h3 { margin: 0 0 7px; font-size: 17px; }
+    .story-event-body > p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+    .story-choices { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; margin-top: 13px; }
+    .story-choice { min-height: 76px; padding: 11px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: var(--panel-2); text-align: left; cursor: pointer; }
+    .story-choice:hover, .story-choice:active { border-color: var(--signal); background: var(--signal-soft); }
+    .story-choice strong, .story-choice span { display: block; }
+    .story-choice strong { margin-bottom: 5px; font-size: 12px; }
+    .story-choice span { color: var(--muted); font-size: 10px; line-height: 1.5; }
     .season-details-toggle { grid-column: 1 / -1; }
     .season-details.is-collapsed { display: none; }
     .market-tools { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
@@ -822,6 +836,8 @@
       .guided-plan-head { align-items: start; flex-direction: column; }
       .guided-steps { grid-template-columns: 1fr; }
       .guided-step p { min-height: 0; }
+      .story-choices { grid-template-columns: 1fr; }
+      .story-choice { min-height: 68px; }
       .market-tools { align-items: stretch; flex-direction: column; }
       .market-tools button { width: 100%; min-height: 44px; }
     }
@@ -902,6 +918,10 @@
             <div class="guided-plan-head"><strong id="guidedPlanTitle">本阶段行动计划</strong><span>按顺序完成即可，也可以直接推进</span></div>
             <div class="guided-steps" id="guidedSteps"></div>
             <div class="guided-tip" id="guidedTip"></div>
+            <section class="story-event" id="storyEventPanel" aria-live="polite" hidden>
+              <div class="story-event-head"><span>GM STORY · 经理办公室</span><b id="storyEventChapter"></b></div>
+              <div class="story-event-body"><h3 id="storyEventTitle"></h3><p id="storyEventText"></p><div class="story-choices" id="storyEventChoices"></div></div>
+            </section>
           </section>
           <div class="season-hero">
             <section class="season-scoreboard">
@@ -1818,7 +1838,7 @@
         tactics:{ pace:'balanced', offense:'balanced', defense:'switch' }, season:null, lastSeasonReport:null, seasonVersion:1,
         tradeCenter:{teamId:aiTeams[0]?.id || '',offerIds:[],targetIds:[],offerPick:false,targetPick:false,offerPickProtection:'unprotected',targetPickProtection:'unprotected',response:null}, pickDebt:0, pickDebtProtection:'unprotected', pendingBonusPicks:[],
         lockerRoom:{chemistry:72,pendingEvent:null,history:[]}, moraleVersion:1,
-        staff:initialStaff(team), leagueHistory:[]
+        staff:initialStaff(team), leagueHistory:[], story:{pending:null,queue:[],seen:[],history:[],flags:{}}
       };
     }
 
@@ -1961,6 +1981,7 @@
 
     function ensureSeasonManagementState() {
       ensureStaffState();
+      ensureStoryState();
       state.status = state.status || 'offseason';
       state.tactics = {...{pace:'balanced',offense:'balanced',defense:'switch'}, ...(state.tactics || {})};
       const rosterIds = new Set(state.roster.map(p => p.id));
@@ -1987,6 +2008,94 @@
         state.season.news = state.season.news || [];
       }
       state.seasonVersion = 1; state.moraleVersion=1;
+    }
+
+    function ensureStoryState() {
+      state.story=state.story||{pending:null,queue:[],seen:[],history:[],flags:{}};
+      state.story.queue=Array.isArray(state.story.queue)?state.story.queue:[];
+      state.story.seen=Array.isArray(state.story.seen)?state.story.seen:[];
+      state.story.history=Array.isArray(state.story.history)?state.story.history:[];
+      state.story.flags=state.story.flags||{};
+    }
+
+    function storyEventKey(id,year=state.year) { return `${year}:${id}`; }
+    function queueStoryEvent(id) {
+      ensureStoryState();
+      const key=storyEventKey(id);
+      if (state.story.seen.includes(key)||state.story.pending===id||state.story.queue.some(item=>item.id===id&&item.year===state.year)) return;
+      state.story.queue.push({id,year:state.year});
+      activateNextStoryEvent();
+    }
+    function activateNextStoryEvent() {
+      ensureStoryState();
+      if (state.story.pending||!state.story.queue.length) return;
+      const next=state.story.queue.shift();
+      if (next.year!==state.year) return activateNextStoryEvent();
+      state.story.pending=next.id;
+    }
+
+    function storyEventDefinition(id) {
+      const ranked=[...state.roster].sort((a,b)=>b.ovr-a.ovr);
+      const star=ranked[0];
+      const young=[...state.roster].sort((a,b)=>a.age-b.age||b.potential-a.potential)[0];
+      const coach=state.staff?.head?.name||'主教练';
+      const games=state.season?.gamesPlayed||0;
+      const record=state.season?`${state.season.wins}胜${state.season.losses}负`:'新赛季尚未开始';
+      const events={
+        direction:{chapter:'第一章 · 公开表态',title:'新任总经理的第一句话',text:`发布会开始前，老板只提醒了一句：“球迷会记住你的答案。”记者随后问：${state.team.name}究竟要立刻争冠，还是保持长期竞争力？`,choices:[
+          {id:'win_now',label:'“目标只有现在。”',desc:'老板耐心＋4，老将士气上升；年轻球员感到机会受限。',apply:()=>{state.patience=clamp(state.patience+4,0,100);state.roster.forEach(p=>p.morale=clamp(p.morale+(p.age>=29?3:-2),0,100));state.story.flags.direction='win_now';}},
+          {id:'patient',label:'“先建立可持续的球队。”',desc:'年轻球员士气与化学反应上升；老板耐心－3。',apply:()=>{state.patience=clamp(state.patience-3,0,100);state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+2,0,100);state.roster.forEach(p=>{if(p.age<=25)p.morale=clamp(p.morale+5,0,100);});state.story.flags.direction='patient';}}
+        ]},
+        coach_plan:{chapter:'第二章 · 权力边界',title:'白板上的不同答案',text:`训练结束后，${coach}把轮换表留在你桌上。他希望保持现有体系，但${star?.name||'球队核心'}的团队认为阵容应该围绕核心重新设计。最后拍板的人是你。`,choices:[
+          {id:'trust_coach',label:'让教练负责篮球决定',desc:'化学反应＋4，战术回归均衡；核心不会获得额外照顾。',apply:()=>{state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+4,0,100);state.tactics={pace:'balanced',offense:'balanced',defense:'switch'};state.story.flags.coach='trusted';}},
+          {id:'back_star',label:'明确围绕核心建队',desc:'核心士气＋5，老板耐心＋1；化学反应－3。',apply:()=>{if(star)star.morale=clamp(star.morale+5,0,100);state.patience=clamp(state.patience+1,0,100);state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry-3,0,100);state.story.flags.coach='overruled';}}
+        ]},
+        pressure:{chapter:'第三章 · 聚光灯下',title:'更衣室的门关上了',text:`赛季进行到${games}场，战绩是${record}。${young?.name||'一名年轻球员'}在训练后留了下来：“外面都在谈交易。我们到底还相信这套阵容吗？”`,choices:[
+          {id:'shield_team',label:'替球员挡住外界压力',desc:'化学反应＋6；老板认为你过于保护球队，耐心－4。',apply:()=>{state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+6,0,100);state.patience=clamp(state.patience-4,0,100);state.story.flags.leadership='shield';}},
+          {id:'challenge_team',label:'公开要求球员证明自己',desc:'老板耐心＋3，核心士气＋3；替补士气下降。',apply:()=>{state.patience=clamp(state.patience+3,0,100);ranked.forEach((p,index)=>p.morale=clamp(p.morale+(index<3?3:-3),0,100));state.story.flags.leadership='pressure';}}
+        ]},
+        deadline:{chapter:'第四章 · 截止日前夜',title:'老板的深夜电话',text:`距离交易截止日只剩几场。老板问你是否愿意为了兑现“${state.story.flags.direction==='patient'?'长期竞争力':'立即赢球'}”的承诺承担风险。更衣室也在等待答案。`,choices:[
+          {id:'hold',label:'保持阵容，不做恐慌交易',desc:'化学反应＋4；老板耐心－2。',apply:()=>{state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+4,0,100);state.patience=clamp(state.patience-2,0,100);state.story.flags.deadline='hold';}},
+          {id:'shop',label:'扩大谈判，寻找最后补强',desc:'额外获得1次操作；化学反应－4，老板耐心＋3。',apply:()=>{state.actions=Math.min(3,state.actions+1);state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry-4,0,100);state.patience=clamp(state.patience+3,0,100);state.story.flags.deadline='aggressive';}}
+        ]},
+        playoffs:{chapter:'第五章 · 不能重来的比赛',title:'核心球员说他能上',text:`季后赛前的最后一次检查中，队医提醒${star?.name||'球队核心'}已经非常疲劳。球员本人只说：“我准备好了。”决定风险的人仍然是你。`,choices:[
+          {id:'protect',label:'限制时间，保护球员',desc:'核心体力恢复、化学反应＋2；季后赛即时实力－2。',apply:()=>{const stats=star&&state.season?.playerStats?.[star.id];if(stats)stats.health=100;state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+2,0,100);state.story.flags.playoffBoost=-2;}},
+          {id:'push',label:'放手一搏，让核心打满',desc:'核心士气＋4；季后赛即时实力＋2，化学反应－2。',apply:()=>{if(star)star.morale=clamp(star.morale+4,0,100);state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry-2,0,100);state.story.flags.playoffBoost=2;}}
+        ]},
+        review:{chapter:'终章 · 谁定义这个赛季',title:'赛季总结会只剩最后一句',text:`赛季已经结束。老板问，这个结果最应该归功于谁，又该由谁承担责任？这句话会决定管理层和更衣室如何记住你。`,choices:[
+          {id:'share',label:'把功劳归给球队和教练',desc:'化学反应＋5，老板耐心＋1。',apply:()=>{state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+5,0,100);state.patience=clamp(state.patience+1,0,100);state.story.flags.identity='people_manager';}},
+          {id:'own',label:'主动承担结果，强调自己的路线',desc:'老板耐心＋5；化学反应－4。',apply:()=>{state.patience=clamp(state.patience+5,0,100);state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry-4,0,100);state.story.flags.identity='executive';}}
+        ]}
+      };
+      return events[id]||null;
+    }
+
+    function resolveStoryChoice(choiceId) {
+      ensureStoryState();
+      const eventId=state.story.pending;
+      const event=storyEventDefinition(eventId);
+      const choice=event?.choices.find(item=>item.id===choiceId);
+      if (!event||!choice) return;
+      choice.apply();
+      state.story.seen.push(storyEventKey(eventId));
+      state.story.history.push({year:state.year,event:event.title,choice:choice.label});
+      state.story.pending=null;
+      activateNextStoryEvent();
+      state.lastResult=`<strong>${event.title}</strong><br>你的决定：${choice.label} 后续事件会记住这次选择。`;
+      save(false);render();showToast('剧情选择已经生效');
+    }
+
+    function renderStoryEvent() {
+      ensureStoryState();activateNextStoryEvent();
+      const panel=$('#storyEventPanel');
+      const event=storyEventDefinition(state.story.pending);
+      panel.hidden=!event;
+      if (!event) return;
+      $('#storyEventChapter').textContent=`${state.year}—${String(state.year+1).slice(-2)}`;
+      $('#storyEventTitle').textContent=event.title;
+      $('#storyEventText').textContent=event.text;
+      $('#storyEventChoices').innerHTML=event.choices.map(choice=>`<button class="story-choice" data-story-choice="${choice.id}"><strong>${choice.label}</strong><span>${choice.desc}</span></button>`).join('');
+      $$('[data-story-choice]').forEach(button=>button.addEventListener('click',()=>resolveStoryChoice(button.dataset.storyChoice)));
     }
 
     function rotationPlayers() {
@@ -2159,6 +2268,7 @@
       const team = teams.find(t => t.id === id);
       const era = pendingEra || eras[0];
       state = newState(team, era);
+      queueStoryEvent('direction');
       $('#startScreen').classList.add('hidden');
       save(false);
       render();
@@ -2264,6 +2374,7 @@
       $('#guideSeason')?.addEventListener('click',()=>simulateToGame(82));
       $('#guideLeague')?.addEventListener('click',()=>switchView('league'));
       $('#guideCareer')?.addEventListener('click',()=>switchView('career'));
+      renderStoryEvent();
     }
 
     function renderSeason(primaryText) {
@@ -2646,7 +2757,10 @@
     }
 
     function renderCareer() {
-      $('#careerFeed').innerHTML = state.career.length ? [...state.career].reverse().map(item => `
+      ensureStoryState();
+      const storyItems=state.story.history.map(item=>({year:`${item.year} 剧情`,text:`${item.event}：${item.choice}`}));
+      const items=[...state.career,...storyItems];
+      $('#careerFeed').innerHTML = items.length ? items.reverse().map(item => `
         <li class="career-item"><span class="career-year">${item.year}</span><span>${item.text}</span></li>`).join('') : '<li class="career-empty">首个赛季尚未开始。</li>';
     }
 
@@ -2910,6 +3024,7 @@
       state.staff.trainingProgress=0; state.staff.trainingBoosts=0;
       state.roster.forEach(p => state.season.playerStats[p.id] = {gp:0,min:0,pts:0,reb:0,ast:0,health:100,injuryWeeks:0});
       state.lockerRoom.pendingEvent=null;
+      queueStoryEvent('coach_plan');
       state.lastResult = `<strong>常规赛开幕</strong><br>轮换与战术已经生效。每次推进一周将模拟最多5场比赛。`;
       save(false); render(); switchView('season'); showToast('常规赛已经开始');
     }
@@ -2975,6 +3090,8 @@
       season.news.unshift(`第${season.week}周：${weekWins}胜${gamesThisWeek-weekWins}负，赛季战绩${season.wins}-${season.losses}。`,...injuries,...lockerMessages,...trainingMessages);
       season.news = season.news.slice(0,8);
       state.wins=season.wins; state.losses=season.losses;
+      if (season.week>=4) queueStoryEvent('pressure');
+      if (season.gamesPlayed>=50) queueStoryEvent('deadline');
       state.lastResult = `<strong>第${season.week}周完成</strong><br>本周${weekWins}胜${gamesThisWeek-weekWins}负，当前${season.wins}胜${season.losses}负。${injuries.length ? `<br>${injuries.join('')}` : ''}${lockerMessages.length?`<br>${lockerMessages.join('')}`:''}${trainingMessages.length?`<br>${trainingMessages.join('')}`:''}`;
       if (season.gamesPlayed >= 82) finalizeRegularSeason();
       else if (renderAfter) { save(false); render(); }
@@ -3053,11 +3170,13 @@
       const madePlayoffs = season.wins >= 41;
       if (madePlayoffs) {
         state.status='playoffs'; state.lastLeague.finish='季后赛待定';
+        queueStoryEvent('playoffs');
         state.lastLeague.playoffPath=`常规赛${season.wins}胜${season.losses}负 · 季后赛即将开始`;
         season.news.unshift('球队获得季后赛资格。轮换与战术仍可调整。');
         state.lastResult=`<strong>常规赛结束</strong><br>${season.wins}胜${season.losses}负，球队进入季后赛。`;
       } else {
         state.status='season_complete'; season.finish='无缘季后赛'; season.champion=false;
+        queueStoryEvent('review');
         state.lastLeague.finish='无缘季后赛';
         state.lastLeague.playoffPath=`常规赛${season.wins}胜${season.losses}负 · 无缘季后赛`;
         state.lastResult=`<strong>赛季结束</strong><br>${season.wins}胜${season.losses}负，球队无缘季后赛。`;
@@ -3068,7 +3187,7 @@
     function simulatePlayoffs() {
       const season = state.season;
       if (!season) return;
-      const rating = seasonTeamRating()+rand(-5,5);
+      const rating = seasonTeamRating()+rand(-5,5)+(state.story?.flags?.playoffBoost||0);
       const champChance = clamp((rating-73)*4+(season.wins-48),1,48);
       const champion = rand(1,100) <= champChance;
       const finish = champion ? 'NBA总冠军' : rating >= 88 ? '总决赛' : rating >= 84 ? '分区决赛' : rating >= 79 ? '分区半决赛' : '季后赛首轮';
@@ -3082,6 +3201,7 @@
       state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+playoffLift,25,95);
       state.lockerRoom.pendingEvent=null;
       state.lastResult=`<strong>${champion ? '夺得总冠军' : '季后赛结束'}</strong><br>${state.team.name}最终成绩：${finish}。`;
+      queueStoryEvent('review');
       save(false); render();
     }
 
@@ -3141,7 +3261,10 @@
     }
 
     function advanceYear() {
+      ensureStoryState();
+      if (state.story.pending) state.story.history.push({year:state.year,event:'未处理的办公室事件',choice:'未回应'});
       state.year++; state.gmYear++; state.actions = 3; state.drafted = false; state.draftStarted = false; state.status='offseason'; state.season=null;
+      state.story.pending=null;state.story.queue=[];state.story.flags.playoffBoost=0;queueStoryEvent('direction');
       state.staff.budget=Math.round((11.5+Math.min(1.5,state.titles*.25)+(state.patience>=80?.5:0))*10)/10;
       releaseAiMarketPlayers(state.aiTeams,state.roster,state.year);
       state.market = generateMarket(state.year); state.prospects = generateProspects(state.era, false, state.year);

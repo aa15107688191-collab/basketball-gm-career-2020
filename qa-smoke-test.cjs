@@ -154,6 +154,21 @@ const tests = String.raw`
     localStorage.setItem = originalSetItem;
   });
 
+  test('赛季剧情选择会记录并持续影响球队', () => {
+    state = newState(teams.find(team => team.id === 'chi'), eras[0]);
+    queueStoryEvent('direction');
+    const patienceBefore = state.patience;
+    assert(state.story.pending === 'direction', '开局剧情没有进入待处理状态');
+    resolveStoryChoice('patient');
+    assert(state.story.history.length === 1 && state.story.seen.includes('2020:direction'), '剧情选择没有写入履历');
+    assert(state.patience === patienceBefore - 3 && state.story.flags.direction === 'patient', '剧情选择后果没有生效');
+    startRegularSeason();
+    assert(state.story.pending === 'coach_plan', '常规赛剧情链没有继续');
+    for (let i = 0; i < 10; i++) simulateWeek(false);
+    assert(state.story.queue.some(item => item.id === 'pressure'), '赛季中期事件没有进入队列');
+    assert(state.story.queue.some(item => item.id === 'deadline'), '交易截止日前事件没有进入队列');
+  });
+
   test('完整30赛季生涯模拟无状态中断', () => {
     state = newState(teams.find(team => team.id === 'bos'), eras[0]);
     state.patience = 100;
