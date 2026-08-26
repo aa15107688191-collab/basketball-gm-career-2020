@@ -141,6 +141,18 @@ const tests = String.raw`
     assert(state.tradeCenter.targetIds.length === 0 && state.tradeCenter.targetPick === false, '切换球队后旧目标资产没有清空');
   });
 
+  test('虎扑内嵌页的所有下拉操作均已替换为游戏内按钮', () => {
+    assert(!/<select\b/i.test(${JSON.stringify(html)}), '页面仍包含可能失效的系统下拉框');
+    state = newState(teams.find(team => team.id === 'lal'), eras[0]);
+    setTacticOption('pace', 'fast');
+    setTrainingOption('trainingFocus', 'shooting');
+    setTrainingOption('trainingIntensity', 'high');
+    setTradePickProtection('offer', 'top3');
+    assert(state.tactics.pace === 'fast', '战术按钮没有更新比赛节奏');
+    assert(state.staff.trainingFocus === 'shooting' && state.staff.trainingIntensity === 'high', '训练按钮没有更新设置');
+    assert(state.tradeCenter.offerPickProtection === 'top3', '选秀权保护按钮没有更新设置');
+  });
+
   test('存档JSON往返与载入迁移', () => {
     state = newState(teams.find(team => team.id === 'chi'), eras[0]);
     state.year = 2027;

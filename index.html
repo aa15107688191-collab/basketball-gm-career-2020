@@ -261,7 +261,7 @@
     .staff-budget span { display: block; margin-bottom: 7px; color: var(--muted); font-size: 9px; }
     .staff-budget strong { color: var(--signal); font-size: 17px; }
     .staff-control { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
-    .staff-control label { display: grid; gap: 7px; color: var(--muted); font-size: 9px; }
+    .staff-control label, .staff-control-group { display: grid; gap: 7px; color: var(--muted); font-size: 9px; }
     .staff-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
     .staff-column { min-width: 0; border-right: 1px solid var(--line); }
     .staff-column:last-child { border-right: 0; }
@@ -406,6 +406,13 @@
     .tactic-group { margin-bottom: 15px; }
     .tactic-group label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 9px; }
     .tactic-select { width: 100%; min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 0; color: var(--text); background: #080906; font: inherit; }
+    .option-button-group { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+    .option-button-group.wide { grid-template-columns: repeat(3,minmax(0,1fr)); }
+    .option-chip { min-width: 0; min-height: 42px; padding: 7px 6px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); background: #ffffff; font-size: 9px; cursor: pointer; }
+    .option-chip.active { border-color: var(--signal); color: #ffffff; background: var(--signal); font-weight: 800; }
+    .option-chip:disabled { cursor: default; opacity: .55; }
+    .pick-protection-buttons { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px; margin-top: 9px; }
+    .pick-protection-buttons .option-chip { min-height: 36px; }
     .tactic-note { padding: 11px; border-left: 2px solid var(--signal); color: var(--muted); background: #111108; font-size: 10px; line-height: 1.6; }
     .injury-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; padding: 9px 0; border-top: 1px solid #24251f; font-size: 10px; }
     .injury-row span:last-child { color: var(--danger); }
@@ -886,6 +893,7 @@
       .inbox-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
       .inbox-actions button { width: 100%; }
       .trade-team-picker { grid-template-columns: 1fr; }
+      .option-button-group.wide { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1025,8 +1033,8 @@
             <section class="staff-budget" id="staffBudget"></section>
           </div>
           <div class="staff-control">
-            <label>本阶段训练重点<select class="tactic-select" id="trainingFocus"></select></label>
-            <label>训练强度<select class="tactic-select" id="trainingIntensity"></select></label>
+            <div class="staff-control-group"><span>本阶段训练重点</span><div class="option-button-group wide" id="trainingFocus" role="group" aria-label="本阶段训练重点"></div></div>
+            <div class="staff-control-group"><span>训练强度</span><div class="option-button-group" id="trainingIntensity" role="group" aria-label="训练强度"></div></div>
           </div>
           <div class="staff-grid" id="staffGrid"></div>
           <div class="staff-note" id="staffNote"></div>
@@ -2601,11 +2609,11 @@
         const role=roleLabels[actualRoleAt(index)];
         return `<article class="mobile-rotation-card"><div class="mobile-rotation-head">${playerAvatarMarkup(p)}<div class="mobile-rotation-name"><button class="name-button" data-details="${p.id}"><strong>${String(index+1).padStart(2,'0')} · ${p.name}</strong></button><span>${p.position} · ${stats.injuryWeeks?`伤停${stats.injuryWeeks}周`:role} · ${rotationMinutes(index)}分钟</span></div><b class="mobile-rotation-score">${p.ovr}</b></div><div class="mobile-rotation-stats"><div class="mobile-rotation-stat"><span>得分</span><b>${average(stats.pts)}</b></div><div class="mobile-rotation-stat"><span>篮板</span><b>${average(stats.reb)}</b></div><div class="mobile-rotation-stat"><span>助攻</span><b>${average(stats.ast)}</b></div></div><div class="mobile-rotation-footer"><div class="mobile-rotation-health"><span>体力 · 士气${Math.round(p.morale)}</span><b>${Math.round(stats.health)}%</b><div class="health-line"><div class="health-fill ${healthClass}" style="width:${stats.health}%"></div></div></div><div class="rotation-controls"><button data-rotation-up="${p.id}" aria-label="上移${p.name}" ${index===0?'disabled':''}>↑</button><button data-rotation-down="${p.id}" aria-label="下移${p.name}" ${index===players.length-1?'disabled':''}>↓</button></div></div></article>`;
       }).join('');
-      const tacticOptions = (value,items) => items.map(([id,label]) => `<option value="${id}" ${value===id?'selected':''}>${label}</option>`).join('');
+      const tacticOptions = (key,value,items) => items.map(([id,label]) => `<button class="option-chip ${value===id?'active':''}" type="button" data-tactic-key="${key}" data-tactic-value="${id}" aria-pressed="${value===id}">${label}</button>`).join('');
       $('#tacticsPanel').innerHTML = `
-        <div class="tactic-group"><label for="paceSelect">比赛节奏</label><select class="tactic-select" id="paceSelect">${tacticOptions(state.tactics.pace,[['slow','慢节奏'],['balanced','均衡'],['fast','快速推进']])}</select></div>
-        <div class="tactic-group"><label for="offenseSelect">进攻重心</label><select class="tactic-select" id="offenseSelect">${tacticOptions(state.tactics.offense,[['inside','冲击内线'],['balanced','均衡进攻'],['perimeter','外线投射']])}</select></div>
-        <div class="tactic-group"><label for="defenseSelect">防守策略</label><select class="tactic-select" id="defenseSelect">${tacticOptions(state.tactics.defense,[['drop','收缩护筐'],['switch','无限换防'],['pressure','全场压迫']])}</select></div>
+        <div class="tactic-group"><label>比赛节奏</label><div class="option-button-group" role="group" aria-label="比赛节奏">${tacticOptions('pace',state.tactics.pace,[['slow','慢节奏'],['balanced','均衡'],['fast','快速推进']])}</div></div>
+        <div class="tactic-group"><label>进攻重心</label><div class="option-button-group" role="group" aria-label="进攻重心">${tacticOptions('offense',state.tactics.offense,[['inside','冲击内线'],['balanced','均衡进攻'],['perimeter','外线投射']])}</div></div>
+        <div class="tactic-group"><label>防守策略</label><div class="option-button-group" role="group" aria-label="防守策略">${tacticOptions('defense',state.tactics.defense,[['drop','收缩护筐'],['switch','无限换防'],['pressure','全场压迫']])}</div></div>
         <div class="tactic-note">${tacticDescription()}</div>`;
       renderLockerRoom(players);
       const injured = players.filter(p => (season?.playerStats?.[p.id]?.injuryWeeks || 0) > 0);
@@ -2614,8 +2622,14 @@
       $('#seasonNews').innerHTML = news.slice(0,5).map(text => `<li>${text}</li>`).join('');
       $$('[data-rotation-up]').forEach(btn => btn.addEventListener('click', () => moveRotation(btn.dataset.rotationUp,-1)));
       $$('[data-rotation-down]').forEach(btn => btn.addEventListener('click', () => moveRotation(btn.dataset.rotationDown,1)));
-      [['paceSelect','pace'],['offenseSelect','offense'],['defenseSelect','defense']].forEach(([id,key]) => $('#'+id).addEventListener('change',e => { state.tactics[key]=e.target.value; save(false); render(); }));
+      $$('[data-tactic-key]').forEach(button=>button.addEventListener('click',()=>setTacticOption(button.dataset.tacticKey,button.dataset.tacticValue)));
       $$('[data-details]').forEach(btn => btn.addEventListener('click', () => showPlayerDetails(btn.dataset.details)));
+    }
+
+    function setTacticOption(key,value) {
+      const allowed={pace:['slow','balanced','fast'],offense:['inside','balanced','perimeter'],defense:['drop','switch','pressure']};
+      if(!allowed[key]?.includes(value))return;
+      state.tactics[key]=value;save(false);render();showToast('比赛计划已更新');
     }
 
     function renderLockerRoom(players) {
@@ -2688,8 +2702,8 @@
       $('#staffIdentity').textContent=`${staff.head.name}的篮球体系`;
       $('#staffDescription').textContent=`比赛加成 ${effects.rating>=0?'+':''}${effects.rating.toFixed(1)}，发展能力 ${effects.development}，伤病预防 ${effects.prevention}。主教练体系、训练重点和医疗团队会共同改变赛季结果。`;
       $('#staffBudget').innerHTML=`<div><span>剩余预算</span><strong>${money(staff.budget-payroll)}</strong></div><div><span>训练进度</span><strong>${staff.trainingBoosts}/3</strong></div><div><span>化学反应影响</span><strong>${effects.chemistry>=0?'+':''}${effects.chemistry}</strong></div><div><span>恢复效率</span><strong>+${effects.recovery}</strong></div>`;
-      $('#trainingFocus').innerHTML=Object.entries(trainingFocusOptions).map(([id,label])=>`<option value="${id}" ${staff.trainingFocus===id?'selected':''}>${label}</option>`).join('');
-      $('#trainingIntensity').innerHTML=Object.entries(trainingIntensityOptions).map(([id,label])=>`<option value="${id}" ${staff.trainingIntensity===id?'selected':''}>${label}</option>`).join('');
+      $('#trainingFocus').innerHTML=Object.entries(trainingFocusOptions).map(([id,label])=>`<button class="option-chip ${staff.trainingFocus===id?'active':''}" type="button" data-training-key="trainingFocus" data-training-value="${id}" aria-pressed="${staff.trainingFocus===id}">${label}</button>`).join('');
+      $('#trainingIntensity').innerHTML=Object.entries(trainingIntensityOptions).map(([id,label])=>`<button class="option-chip ${staff.trainingIntensity===id?'active':''}" type="button" data-training-key="trainingIntensity" data-training-value="${id}" aria-pressed="${staff.trainingIntensity===id}">${label}</button>`).join('');
       const columns=[['head','主教练',staffCatalog.head],['development','球员发展',staffCatalog.development],['medical','医疗与体能',staffCatalog.medical]];
       const metrics=(slot,item)=>slot==='medical'
         ? [['预防',item.prevention||0],['恢复',item.recovery||0],['体能',item.conditioning||0],['费用',money(item.cost)]]
@@ -2707,9 +2721,15 @@
       }).join('');
       const intensityNote=staff.trainingIntensity==='high'?'高强度训练会更快获得成长，但体能消耗与伤病概率更高。':staff.trainingIntensity==='light'?'轻量训练有利于保持健康，但成长速度较慢。':'标准训练在成长与伤病风险之间保持平衡。';
       $('#staffNote').textContent=`每个休赛期最多使用现有操作次数调整教练组。训练每累计一定进度触发一次能力提升，单赛季最多3次。${intensityNote}`;
-      $('#trainingFocus').addEventListener('change',e=>{staff.trainingFocus=e.target.value;save(false);render();showToast('训练重点已更新');});
-      $('#trainingIntensity').addEventListener('change',e=>{staff.trainingIntensity=e.target.value;save(false);render();showToast('训练强度已更新');});
+      $$('[data-training-key]').forEach(button=>button.addEventListener('click',()=>setTrainingOption(button.dataset.trainingKey,button.dataset.trainingValue)));
       $$('[data-staff-hire]').forEach(btn=>btn.addEventListener('click',()=>{const [slot,id]=btn.dataset.staffHire.split(':');hireStaff(slot,id);}));
+    }
+
+    function setTrainingOption(key,value) {
+      ensureStaffState();
+      const allowed=key==='trainingFocus'?trainingFocusOptions:key==='trainingIntensity'?trainingIntensityOptions:null;
+      if(!allowed?.[value])return;
+      state.staff[key]=value;save(false);render();showToast(key==='trainingFocus'?'训练重点已更新':'训练强度已更新');
     }
 
     function hireStaff(slot,id) {
@@ -2743,9 +2763,9 @@
       $('#tradeTargetAssets').innerHTML=team?[...team.roster].sort((a,b)=>b.ovr-a.ovr).map(p=>playerAsset(p,'target',center.targetIds.includes(p.id))).join('')+`<button class="trade-asset pick-asset ${center.targetPick?'selected':''}" id="tradeTargetPick" type="button" ${open&&team.futurePicks>0?'':'disabled'}><i class="rotation-rank">1ST</i><span><strong>${state.year+1}年未来首轮签</strong><span>${team.name}自有首轮 · 顺位未知</span></span><b>PICK</b></button>`:'<div class="season-empty">没有可用球队。</div>';
       const packageText=(players,pick,empty)=>players.length||pick?[...players.map(p=>`${p.name}（${p.ovr}）`),...(pick?['未来首轮签']:[])].join('＋'):empty;
       const salaryOut=rosterSalary(outgoing),salaryIn=rosterSalary(incoming);
-      const protectionOptions=value=>[['unprotected','无保护'],['top3','前三顺位保护'],['lottery','乐透保护']].map(([id,label])=>`<option value="${id}" ${value===id?'selected':''}>${label}</option>`).join('');
-      $('#tradeUserSummary').innerHTML=`送出：${packageText(outgoing,center.offerPick,'尚未选择')}${center.offerPick?`（${pickProtectionLabel(center.offerPickProtection)}）`:''}<br>薪资变化：${money(salaryIn-salaryOut)} · 成交后${state.roster.length-outgoing.length+incoming.length}人${center.offerPick?`<select class="trade-team-select" id="offerProtectionSelect" aria-label="送出选秀权保护" ${ownsExtraFirst?'disabled title="已获得的选秀权保护不能修改"':''}>${protectionOptions(center.offerPickProtection)}</select>`:''}`;
-      $('#tradeTargetSummary').innerHTML=`得到：${packageText(incoming,center.targetPick,'尚未选择')}${center.targetPick?`（${pickProtectionLabel(center.targetPickProtection)}）`:''}<br>${strategy?`${strategy.label}：${strategy.note}`:''}${center.targetPick?`<select class="trade-team-select" id="targetProtectionSelect" aria-label="得到选秀权保护">${protectionOptions(center.targetPickProtection)}</select>`:''}`;
+      const protectionOptions=(side,value,disabled=false)=>`<div class="pick-protection-buttons" role="group" aria-label="${side==='offer'?'送出':'得到'}选秀权保护">${[['unprotected','无保护'],['top3','前三保护'],['lottery','乐透保护']].map(([id,label])=>`<button class="option-chip ${value===id?'active':''}" type="button" data-pick-protection-side="${side}" data-pick-protection-value="${id}" aria-pressed="${value===id}" ${disabled?'disabled':''}>${label}</button>`).join('')}</div>`;
+      $('#tradeUserSummary').innerHTML=`送出：${packageText(outgoing,center.offerPick,'尚未选择')}${center.offerPick?`（${pickProtectionLabel(center.offerPickProtection)}）`:''}<br>薪资变化：${money(salaryIn-salaryOut)} · 成交后${state.roster.length-outgoing.length+incoming.length}人${center.offerPick?protectionOptions('offer',center.offerPickProtection,ownsExtraFirst):''}`;
+      $('#tradeTargetSummary').innerHTML=`得到：${packageText(incoming,center.targetPick,'尚未选择')}${center.targetPick?`（${pickProtectionLabel(center.targetPickProtection)}）`:''}<br>${strategy?`${strategy.label}：${strategy.note}`:''}${center.targetPick?protectionOptions('target',center.targetPickProtection):''}`;
       const evaluation=tradeEvaluation();
       const response=center.response;
       const interest=response?.interest ?? evaluation.interest;
@@ -2765,8 +2785,7 @@
       $('#tradeOfferPick').addEventListener('click',()=>{center.offerPick=!center.offerPick;if(center.offerPick&&ownsExtraFirst)center.offerPickProtection=state.pendingBonusPicks[0]?.protection||'unprotected';center.response=null;save(false);render();});
       $('#tradeTargetPick').addEventListener('click',()=>{center.targetPick=!center.targetPick;center.response=null;save(false);render();});
       $('#tradeTeamTrigger').addEventListener('click',openTradeTeamPicker);
-      $('#offerProtectionSelect')?.addEventListener('change',e=>{center.offerPickProtection=e.target.value;center.response=null;save(false);render();});
-      $('#targetProtectionSelect')?.addEventListener('change',e=>{center.targetPickProtection=e.target.value;center.response=null;save(false);render();});
+      $$('[data-pick-protection-side]').forEach(button=>button.addEventListener('click',()=>setTradePickProtection(button.dataset.pickProtectionSide,button.dataset.pickProtectionValue)));
     }
 
     function openTradeTeamPicker() {
@@ -2779,6 +2798,12 @@
       const team=state.aiTeams.find(item=>item.id===id);if(!team)return;
       state.tradeCenter.teamId=id;state.tradeCenter.targetIds=[];state.tradeCenter.targetPick=false;state.tradeCenter.response=null;
       closeModal();save(false);render();showToast(`已选择${team.name}`);
+    }
+
+    function setTradePickProtection(side,value) {
+      if(!['offer','target'].includes(side)||!['unprotected','top3','lottery'].includes(value))return;
+      state.tradeCenter[side==='offer'?'offerPickProtection':'targetPickProtection']=value;
+      state.tradeCenter.response=null;save(false);render();showToast(`已设置${pickProtectionLabel(value)}`);
     }
 
     function toggleTradeAsset(key,id) {
