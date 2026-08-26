@@ -7,6 +7,8 @@ const gmHtml = fs.readFileSync(path.join(root, 'gm.html'), 'utf8');
 const hexHtml = fs.readFileSync(path.join(root, 'hex.html'), 'utf8');
 const hexEngine = fs.readFileSync(path.join(root, 'hex-engine.js'), 'utf8');
 const hexV02 = fs.readFileSync(path.join(root, 'hex-v02.js'), 'utf8');
+const hexV021 = fs.readFileSync(path.join(root, 'hex-v021.js'), 'utf8');
+const hexAnalytics = fs.readFileSync(path.join(root, 'hex-analytics.js'), 'utf8');
 const hexUi = fs.readFileSync(path.join(root, 'hex-ui.js'), 'utf8');
 const hexV02Css = fs.readFileSync(path.join(root, 'hex-v02.css'), 'utf8');
 const serverDir = path.join(root, 'dist', 'server');
@@ -17,6 +19,8 @@ const GM_HTML = ${JSON.stringify(gmHtml)};
 const HEX_HTML = ${JSON.stringify(hexHtml)};
 const HEX_ENGINE = ${JSON.stringify(hexEngine)};
 const HEX_V02 = ${JSON.stringify(hexV02)};
+const HEX_V021 = ${JSON.stringify(hexV021)};
+const HEX_ANALYTICS = ${JSON.stringify(hexAnalytics)};
 const HEX_UI = ${JSON.stringify(hexUi)};
 const HEX_V02_CSS = ${JSON.stringify(hexV02Css)};
 
@@ -33,6 +37,10 @@ export default {
           ? { body: HEX_ENGINE, type: 'application/javascript; charset=utf-8' }
           : url.pathname === '/hex-v02.js'
             ? { body: HEX_V02, type: 'application/javascript; charset=utf-8' }
+            : url.pathname === '/hex-v021.js'
+              ? { body: HEX_V021, type: 'application/javascript; charset=utf-8' }
+              : url.pathname === '/hex-analytics.js'
+                ? { body: HEX_ANALYTICS, type: 'application/javascript; charset=utf-8' }
             : url.pathname === '/hex-ui.js'
               ? { body: HEX_UI, type: 'application/javascript; charset=utf-8' }
               : url.pathname === '/hex-v02.css'
