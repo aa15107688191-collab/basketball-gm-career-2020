@@ -51,10 +51,12 @@ export default {
                 ? { body: HEX_V02_CSS, type: 'text/css; charset=utf-8' }
           : null;
     if (!asset) return new Response('Not Found', { status: 404 });
+    const isHtml = asset.type.startsWith('text/html');
     return new Response(asset.body, {
       headers: {
         'content-type': asset.type,
-        'cache-control': 'public, max-age=300',
+        'cache-control': isHtml ? 'no-store, no-cache, must-revalidate, max-age=0' : 'public, max-age=31536000, immutable',
+        ...(isHtml ? { 'pragma': 'no-cache', 'expires': '0' } : {}),
         'x-content-type-options': 'nosniff',
         'referrer-policy': 'strict-origin-when-cross-origin'
       }
