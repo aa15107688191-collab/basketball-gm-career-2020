@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b0e14">
   <title>NBA海克斯王朝</title>
+  <link rel="stylesheet" href="./hex-v02.css">
   <style>
     :root{--bg:#0b0e14;--panel:#121722;--panel2:#192131;--line:#2a3447;--text:#f5f7fb;--muted:#98a4b8;--cyan:#39d9ff;--blue:#4c78ff;--gold:#f1bd55;--purple:#c36cff;--good:#52d99b;--bad:#ff6f75;--safe:env(safe-area-inset-bottom,0px)}
     .share-preview{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;background:rgba(3,6,12,.9)}.share-preview-card{width:min(420px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:14px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}.share-preview img{display:block;width:100%;height:auto;border-radius:10px}.share-preview p{margin:12px 0;color:var(--muted);font-size:12px;text-align:center}.share-preview-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.share-preview-actions a{display:grid;place-items:center;text-decoration:none}
@@ -20,7 +21,8 @@
   </main>
   <div class="toast" id="toast" role="status"></div>
   <script src="./hex-engine.js"></script>
-  <script>
+  <script src="./hex-v02.js"></script>
+  <script type="text/plain" id="legacy-v01">
     const H=globalThis.HexEngine,STORAGE='nba_hex_dynasty_v01',HISTORY='nba_hex_dynasty_history_v01';
     const $=selector=>document.querySelector(selector);let state=null,toastTimer=null;
     const newsTemplates=[
@@ -75,5 +77,6 @@
     function exportShareCard(){const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1440;const c=canvas.getContext('2d'),r=state.result;c.fillStyle='#0b0e14';c.fillRect(0,0,1080,1440);c.fillStyle='#39d9ff';c.font='700 42px sans-serif';c.fillText('NBA HEX DYNASTY',70,100);c.fillStyle='#f5f7fb';c.font='900 150px sans-serif';c.fillText(`${state.season.wins}-${state.season.losses}`,70,290);c.fillStyle=r.champion?'#f1bd55':'#f5f7fb';c.font='800 62px sans-serif';c.fillText(r.playoffResult,70,390);c.fillStyle='#98a4b8';c.font='32px sans-serif';c.fillText('核心阵容',70,500);c.fillStyle='#f5f7fb';c.font='700 38px sans-serif';state.coreIds.forEach((id,i)=>c.fillText(`${i+1}. ${player(id).season} ${player(id).name}`,70,570+i*65));c.fillStyle='#98a4b8';c.font='32px sans-serif';c.fillText('海克斯',70,800);c.fillStyle='#f5f7fb';c.font='700 34px sans-serif';state.hexIds.forEach((id,i)=>c.fillText(`◆ ${hex(id).name}`,70,865+i*58));c.fillStyle='#39d9ff';c.font='700 38px sans-serif';c.fillText(r.tags.join(' · '),70,1180);c.fillStyle='#98a4b8';c.font='28px sans-serif';c.fillText(`进攻 ${r.ratings.offense}  防守 ${r.ratings.defense}  空间 ${r.ratings.space}`,70,1280);const url=canvas.toDataURL('image/png'),preview=document.createElement('div');preview.className='share-preview';preview.innerHTML=`<div class="share-preview-card"><img src="${url}" alt="NBA海克斯王朝战绩图"><p>手机端可长按图片保存，或点击下方下载。</p><div class="share-preview-actions"><a class="primary" href="${url}" download="NBA海克斯王朝战绩.png">下载图片</a><button class="ghost" type="button">关闭</button></div></div>`;preview.querySelector('button').addEventListener('click',()=>preview.remove());document.body.appendChild(preview);toast('战绩图已生成');}
     state=load();if(state.phase==='history')state.phase='home';render();
   </script>
+  <script src="./hex-ui.js"></script>
 </body>
 </html>
