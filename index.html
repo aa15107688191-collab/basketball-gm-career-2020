@@ -505,6 +505,18 @@
     .trade-column-head h3 { margin: 0 0 5px; font-size: 13px; }
     .trade-column-head span { color: var(--muted); font-size: 9px; }
     .trade-team-select { width: 100%; min-height: 44px; margin-top: 10px; padding: 0 10px; border: 1px solid var(--line); border-radius: 0; color: var(--text); background: #080906; font: inherit; }
+    .trade-team-trigger { display: flex; width: 100%; min-height: 52px; margin-top: 10px; padding: 9px 11px; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--line-strong); border-radius: 12px; color: var(--text); background: #ffffff; text-align: left; cursor: pointer; }
+    .trade-team-trigger strong, .trade-team-trigger span { display: block; }
+    .trade-team-trigger strong { margin-bottom: 3px; font-size: 12px; }
+    .trade-team-trigger span { color: var(--muted); font-size: 9px; }
+    .trade-team-trigger::after { content: '更换 ›'; flex: 0 0 auto; color: var(--signal); font-size: 10px; font-weight: 800; }
+    .trade-team-picker { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+    .trade-team-option { display: flex; min-width: 0; min-height: 62px; padding: 9px 11px; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: #ffffff; text-align: left; cursor: pointer; }
+    .trade-team-option.current { border-color: var(--signal); background: var(--signal-soft); }
+    .trade-team-option .team-mark { width: 38px; height: 38px; flex: 0 0 38px; }
+    .trade-team-option strong, .trade-team-option span { display: block; min-width: 0; }
+    .trade-team-option strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .trade-team-option span { margin-top: 3px; color: var(--muted); font-size: 9px; }
     .trade-assets { max-height: 480px; overflow-y: auto; }
     .trade-asset { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 9px; align-items: center; min-height: 58px; padding: 9px 14px; border-bottom: 1px solid #24251f; cursor: pointer; }
     button.trade-asset { width: 100%; border-top: 0; border-right: 0; border-left: 0; color: var(--text); background: transparent; text-align: left; font: inherit; }
@@ -873,6 +885,7 @@
       .direction-card { min-height: 68px; }
       .inbox-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
       .inbox-actions button { width: 100%; }
+      .trade-team-picker { grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1037,7 +1050,7 @@
               <button class="ghost-button" id="tradeMarketButton">查看自由市场</button>
             </section>
             <section class="trade-column">
-              <div class="trade-column-head"><h3>交易目标</h3><span id="tradeTeamMotive">选择谈判球队</span><select class="trade-team-select" id="tradeTeamSelect" aria-label="选择交易球队"></select></div>
+              <div class="trade-column-head"><h3>交易目标</h3><span id="tradeTeamMotive">选择谈判球队</span><button class="trade-team-trigger" id="tradeTeamTrigger" type="button" aria-haspopup="dialog"><span><strong id="tradeTeamName">选择球队</strong><span id="tradeTeamRating">点此打开球队列表</span></span></button></div>
               <div class="trade-assets" id="tradeTargetAssets"></div>
               <div class="trade-summary" id="tradeTargetSummary"></div>
             </section>
@@ -2721,7 +2734,8 @@
       const open=transactionsOpen() && state.actions>0;
       $('#tradeMeta').textContent=open?`交易窗口开放 · 剩余${state.actions}次操作`:'交易窗口已关闭';
       $('#tradeUserTeam').textContent=`${state.team.name}的筹码`;
-      $('#tradeTeamSelect').innerHTML=state.aiTeams.map(item=>`<option value="${item.id}" ${item.id===center.teamId?'selected':''}>${item.name} · ${Math.round(rosterRating(item.roster))}</option>`).join('');
+      $('#tradeTeamName').textContent=team?.name||'选择球队';
+      $('#tradeTeamRating').textContent=team?`${franchiseInfo(team.id).conference} · 球队实力 ${Math.round(rosterRating(team.roster))}`:'点此打开球队列表';
       $('#tradeTeamMotive').innerHTML=strategy?`<span class="trade-motive">${strategy.label}</span> · ${strategy.note}`:'选择谈判球队';
       const playerAsset=(p,side,selected)=>`<label class="trade-asset ${selected?'selected':''}"><input type="checkbox" data-trade-${side}="${p.id}" ${selected?'checked':''} ${open?'':'disabled'}><span class="player-identity">${playerAvatarMarkup(p)}<span class="player-identity-copy"><strong>${p.name}${p.tradeRequest?' · 申请交易':''}</strong><span>${p.position} · ${p.age}岁 · ${money(p.salary)}${side==='offer'?` · 士气${Math.round(p.morale||70)}`:''}</span></span></span><b>${p.ovr}</b></label>`;
       const ownsExtraFirst=(state.bonusPicks||0)>0 || (state.pendingBonusPicks||[]).length>0;
@@ -2750,9 +2764,21 @@
       $$('[data-trade-target]').forEach(input=>input.addEventListener('change',()=>toggleTradeAsset('targetIds',input.dataset.tradeTarget)));
       $('#tradeOfferPick').addEventListener('click',()=>{center.offerPick=!center.offerPick;if(center.offerPick&&ownsExtraFirst)center.offerPickProtection=state.pendingBonusPicks[0]?.protection||'unprotected';center.response=null;save(false);render();});
       $('#tradeTargetPick').addEventListener('click',()=>{center.targetPick=!center.targetPick;center.response=null;save(false);render();});
-      $('#tradeTeamSelect').addEventListener('change',e=>{center.teamId=e.target.value;center.targetIds=[];center.targetPick=false;center.response=null;save(false);render();});
+      $('#tradeTeamTrigger').addEventListener('click',openTradeTeamPicker);
       $('#offerProtectionSelect')?.addEventListener('change',e=>{center.offerPickProtection=e.target.value;center.response=null;save(false);render();});
       $('#targetProtectionSelect')?.addEventListener('change',e=>{center.targetPickProtection=e.target.value;center.response=null;save(false);render();});
+    }
+
+    function openTradeTeamPicker() {
+      const currentId=state.tradeCenter.teamId;
+      const sorted=[...state.aiTeams].sort((a,b)=>franchiseInfo(a.id).conference.localeCompare(franchiseInfo(b.id).conference,'zh-CN')||a.name.localeCompare(b.name,'zh-CN'));
+      openModal('选择交易球队',`<p class="modal-copy">选择谈判对象后，右侧会立即显示该队的现实球员与选秀权。这个面板兼容虎扑内嵌页面。</p><div class="trade-team-picker">${sorted.map(team=>`<button class="trade-team-option ${team.id===currentId?'current':''}" type="button" data-trade-team-choice="${team.id}"><span class="team-mark">${teamAvatarMarkup(team)}</span><span><strong>${team.name}</strong><span>${franchiseInfo(team.id).conference} · 实力${Math.round(rosterRating(team.roster))}${team.id===currentId?' · 当前':''}</span></span></button>`).join('')}</div>`);
+    }
+
+    function selectTradeTeam(id) {
+      const team=state.aiTeams.find(item=>item.id===id);if(!team)return;
+      state.tradeCenter.teamId=id;state.tradeCenter.targetIds=[];state.tradeCenter.targetPick=false;state.tradeCenter.response=null;
+      closeModal();save(false);render();showToast(`已选择${team.name}`);
     }
 
     function toggleTradeAsset(key,id) {
@@ -3656,7 +3682,11 @@
       $('#modalClose').addEventListener('click', closeModal);
       $('#modalBackdrop').addEventListener('click', e => { if (e.target === $('#modalBackdrop')) closeModal(); });
       $('#newGameButton').addEventListener('click', openResetConfirmation);
-      $('#modalBody').addEventListener('click', e => { if (e.target.id === 'confirmReset') resetGame(); });
+      $('#modalBody').addEventListener('click', e => {
+        if (e.target.id === 'confirmReset') return resetGame();
+        const tradeTeam=e.target.closest('[data-trade-team-choice]');
+        if(tradeTeam) selectTradeTeam(tradeTeam.dataset.tradeTeamChoice);
+      });
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
           if ($('#mobileMoreBackdrop').classList.contains('open')) setMobileMore(false);

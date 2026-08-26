@@ -131,6 +131,16 @@ const tests = String.raw`
     assert(state.actions === actionsBefore - 1, '交易未消耗操作次数');
   });
 
+  test('交易目标球队可通过游戏内面板切换', () => {
+    state = newState(teams.find(team => team.id === 'lal'), eras[0]);
+    const nextTeam = state.aiTeams.find(team => team.id !== state.tradeCenter.teamId);
+    state.tradeCenter.targetIds = [state.aiTeams[0].roster[0].id];
+    state.tradeCenter.targetPick = true;
+    selectTradeTeam(nextTeam.id);
+    assert(state.tradeCenter.teamId === nextTeam.id, '目标球队没有切换');
+    assert(state.tradeCenter.targetIds.length === 0 && state.tradeCenter.targetPick === false, '切换球队后旧目标资产没有清空');
+  });
+
   test('存档JSON往返与载入迁移', () => {
     state = newState(teams.find(team => team.id === 'chi'), eras[0]);
     state.year = 2027;
