@@ -6,6 +6,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const gmHtml = fs.readFileSync(path.join(root, 'gm.html'), 'utf8');
 const hexHtml = fs.readFileSync(path.join(root, 'hex.html'), 'utf8');
 const hexEngine = fs.readFileSync(path.join(root, 'hex-engine.js'), 'utf8');
+const hexAvatars = fs.readFileSync(path.join(root, 'hex-avatars.js'), 'utf8');
 const hexV02 = fs.readFileSync(path.join(root, 'hex-v02.js'), 'utf8');
 const hexV021 = fs.readFileSync(path.join(root, 'hex-v021.js'), 'utf8');
 const hexAnalytics = fs.readFileSync(path.join(root, 'hex-analytics.js'), 'utf8');
@@ -18,6 +19,7 @@ const worker = `const HTML = ${JSON.stringify(html)};
 const GM_HTML = ${JSON.stringify(gmHtml)};
 const HEX_HTML = ${JSON.stringify(hexHtml)};
 const HEX_ENGINE = ${JSON.stringify(hexEngine)};
+const HEX_AVATARS = ${JSON.stringify(hexAvatars)};
 const HEX_V02 = ${JSON.stringify(hexV02)};
 const HEX_V021 = ${JSON.stringify(hexV021)};
 const HEX_ANALYTICS = ${JSON.stringify(hexAnalytics)};
@@ -35,6 +37,8 @@ export default {
         ? { body: HEX_HTML, type: 'text/html; charset=utf-8' }
         : url.pathname === '/hex-engine.js'
           ? { body: HEX_ENGINE, type: 'application/javascript; charset=utf-8' }
+          : url.pathname === '/hex-avatars.js'
+            ? { body: HEX_AVATARS, type: 'application/javascript; charset=utf-8' }
           : url.pathname === '/hex-v02.js'
             ? { body: HEX_V02, type: 'application/javascript; charset=utf-8' }
             : url.pathname === '/hex-v021.js'

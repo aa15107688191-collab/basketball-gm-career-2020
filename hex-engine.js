@@ -51,7 +51,13 @@
   ];
 
   const ages={curry16:27,magic87:27,paul08:22,nash07:32,kidd03:29,iverson01:25,harden18:28,wade09:27,kyrie16:23,rose11:22,luka24:24,jordan91:27,kobe06:27,durant17:28,lebron13:28,bird86:29,kawhi19:27,pippen96:30,tmac03:23,klay16:25,ray01:25,manu05:27,iguodala15:31,duncan03:26,garnett04:27,giannis21:26,dirk11:32,barkley90:26,malone97:33,davis20:26,draymond16:25,rodman96:34,shaq00:27,hakeem94:31,jokic23:27,kareem71:23,wilt67:30,russell65:30,dwight11:25,gobert21:28};
-  const players=rows.map(row=>{const[id,name,season,positions,tier,fin,mid,three,pass,perimeterDefense,interiorDefense,rebound,athleticism,usage,offball,fit,clutch,consistency,size,tags]=row;return{id,name,season,age:ages[id],positions,tier,attributes:{fin,mid,three,pass,perimeterDefense,interiorDefense,rebound,athleticism},hidden:{usage,offball,fit,clutch,consistency,size},tags:tags.split(',')};});
+  const displayNames={
+    curry16:'斯蒂芬·库里',magic87:'魔术师·约翰逊',paul08:'克里斯·保罗',nash07:'史蒂夫·纳什',kidd03:'贾森·基德',iverson01:'阿伦·艾弗森',harden18:'詹姆斯·哈登',wade09:'德维恩·韦德',kyrie16:'凯里·欧文',rose11:'德里克·罗斯',
+    luka24:'卢卡·东契奇',jordan91:'迈克尔·乔丹',kobe06:'科比·布莱恩特',durant17:'凯文·杜兰特',lebron13:'勒布朗·詹姆斯',bird86:'拉里·伯德',kawhi19:'科怀·伦纳德',pippen96:'斯科蒂·皮蓬',tmac03:'特雷西·麦克格雷迪',klay16:'克莱·汤普森',
+    ray01:'雷·阿伦',manu05:'马努·吉诺比利',iguodala15:'安德烈·伊格达拉',duncan03:'蒂姆·邓肯',garnett04:'凯文·加内特',giannis21:'扬尼斯·阿德托昆博',dirk11:'德克·诺维茨基',barkley90:'查尔斯·巴克利',malone97:'卡尔·马龙',davis20:'安东尼·戴维斯',
+    draymond16:'德雷蒙德·格林',rodman96:'丹尼斯·罗德曼',shaq00:'沙奎尔·奥尼尔',hakeem94:'哈基姆·奥拉朱旺',jokic23:'尼古拉·约基奇',kareem71:'卡里姆·阿卜杜尔-贾巴尔',wilt67:'威尔特·张伯伦',russell65:'比尔·拉塞尔',dwight11:'德怀特·霍华德',gobert21:'鲁迪·戈贝尔'
+  };
+  const players=rows.map(row=>{const[id,name,season,positions,tier,fin,mid,three,pass,perimeterDefense,interiorDefense,rebound,athleticism,usage,offball,fit,clutch,consistency,size,tags]=row;return{id,name:displayNames[id]||name,season,age:ages[id],positions,tier,attributes:{fin,mid,three,pass,perimeterDefense,interiorDefense,rebound,athleticism},hidden:{usage,offball,fit,clutch,consistency,size},tags:tags.split(',')};});
 
   const hexes=[
     ['three_rain','三分雨','SILVER','全队三分能力＋4'],['paint_bully','禁区暴徒','SILVER','终结＋5，空间－2'],['youth','青春风暴','SILVER','年轻球员进攻与运动能力提升'],['veterans','老兵不死','SILVER','老将稳定性提升'],['bench_mob','板凳匪徒','SILVER','替补模拟权重＋15%'],['transition','防守反击','SILVER','外防优秀时进攻＋2'],['second_chance','二次进攻','SILVER','篮板收益＋15%'],['share_ball','人人有球打','SILVER','球权冲突降低40%'],['iron_defense','铁血防守','SILVER','防守＋4，疲劳风险提升'],['fourth_quarter','第四节先生','SILVER','关键比赛能力提升'],['endless_energy','无限体力','SILVER','主力权重提升，伤病风险增加'],['hot_hand','手感来了','SILVER','爆发表现概率提升'],

@@ -18,8 +18,11 @@ conflict.hexIds=['share_ball','superstar_ball','gods','five_as_one'];
 const repaired=W.playoffMatchup(H,V,conflict,{round:3,seriesGame:5,style:'DEFENSE',tactic:'short',basePower:97});
 assert(bad.details.usagePenalty>repaired.details.usagePenalty,'repair hexes must reduce playoff usage penalty');
 assert.deepStrictEqual(W.sortedEndings(V,['regular_king','historic','choke']),['historic','choke','regular_king']);
-const html=fs.readFileSync('./hex.html','utf8'),ui=fs.readFileSync('./hex-ui.js','utf8');
-assert(html.includes('hex-v021.js')&&html.includes('hex-analytics.js'));
+const html=fs.readFileSync('./hex.html','utf8'),ui=fs.readFileSync('./hex-ui.js','utf8'),avatars=fs.readFileSync('./hex-avatars.js','utf8');
+assert(html.includes('hex-v021.js')&&html.includes('hex-analytics.js')&&html.includes('hex-avatars.js'));
+assert(H.players.every(p=>/[\u3400-\u9fff]/.test(p.name)),'all player display names should be Chinese');
+assert.strictEqual((avatars.match(/data:image\/webp;base64,/g)||[]).length,H.players.length,'every player should have a bundled avatar');
+assert(ui.includes('positionNames')&&ui.includes('tierNames')&&ui.includes('tagNames'),'player metadata should use Chinese display labels');
 assert(ui.includes("nba_hex_dynasty_v01")&&ui.includes("nba_hex_analytics_v1")===false,'analytics key must stay encapsulated');
 function seededSeries(){let own=0,opp=0,game=0;while(own<4&&opp<4){const match=W.playoffMatchup(H,V,state,{round:2,seriesGame:game,style:'DEFENSE',tactic:'system',basePower:97}),rng=V.rngFor(state.seed,'v021_seed_series',game),result=H.simulateGame(match.team,match.opponent,{home:game%2===0,playoffs:true},rng);(result.win?own++:opp++);game++;}return{own,opp,game};}
 assert.deepStrictEqual(seededSeries(),seededSeries(),'same seed and decisions must reproduce playoff series exactly');
