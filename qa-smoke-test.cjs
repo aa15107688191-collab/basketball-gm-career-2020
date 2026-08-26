@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const html = fs.readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+const html = fs.readFileSync(require('path').join(__dirname, 'gm.html'), 'utf8');
 const match = html.match(/<script>([\s\S]*?)<\/script>/);
 if (!match) throw new Error('未找到内联游戏脚本');
 
