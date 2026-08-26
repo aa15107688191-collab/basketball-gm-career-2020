@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "node build.cjs",
-    "test": "node qa-smoke-test.cjs"
+    "test": "node qa-smoke-test.cjs && node hex-qa-test.cjs",
+    "simulate": "node hex-simulate.cjs"
   }
 }

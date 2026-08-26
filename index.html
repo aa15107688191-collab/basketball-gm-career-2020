@@ -577,6 +577,12 @@
     .start-title { padding: 20px; border-bottom: 1px solid var(--line); }
     .start-title h1 { margin: 0 0 10px; font-size: clamp(34px, 9vw, 76px); line-height: .88; letter-spacing: -.07em; }
     .start-title p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .mode-launch { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; min-height: 74px; padding: 13px 16px; border-bottom: 1px solid var(--line); color: #ffffff; background: #172641; text-decoration: none; }
+    .mode-launch-badge { padding: 5px 7px; border: 1px solid #39d9ff; border-radius: 999px; color: #39d9ff; font-size: 9px; font-weight: 900; letter-spacing: .12em; }
+    .mode-launch strong, .mode-launch small { display: block; }
+    .mode-launch strong { margin-bottom: 4px; font-size: 15px; }
+    .mode-launch small { color: #aebbd0; font-size: 10px; line-height: 1.4; }
+    .mode-launch-arrow { color: #39d9ff; font-size: 24px; }
     .era-choices, .team-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); min-width: 0; }
     .start-step.hidden { display: none; }
     .step-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; }
@@ -911,6 +917,11 @@
         <h1 id="startTitle">现代总经理<br>生涯</h1>
         <p>从2020休赛期开始，30支球队均使用真实核心阵容并由AI持续经营。2020—2026使用真实选秀名单，2027年后加入历史新秀档案。</p>
       </header>
+      <a class="mode-launch" href="./hex.html" aria-label="进入NBA海克斯王朝新模式">
+        <span class="mode-launch-badge">NEW</span>
+        <span><strong>NBA海克斯王朝</strong><small>球星三选一 · 4次海克斯强化 · 单局5—10分钟</small></span>
+        <span class="mode-launch-arrow" aria-hidden="true">›</span>
+      </a>
       <div class="start-step hidden" id="eraStep">
         <div class="step-head"><span>第一步</span><span>选择联盟年代</span></div>
         <div class="era-choices" id="eraChoices"></div>
