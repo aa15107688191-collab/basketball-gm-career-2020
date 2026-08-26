@@ -27,6 +27,7 @@
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
       background: var(--bg);
       color: var(--text);
       font-family: "Segoe UI", "Microsoft YaHei UI", Arial, sans-serif;
@@ -50,6 +51,7 @@
     .app {
       width: min(1180px, 100%);
       min-height: 100vh;
+      min-height: 100dvh;
       margin: 0 auto;
       padding: calc(14px + var(--safe-top)) 14px calc(88px + var(--safe-bottom));
     }
@@ -483,7 +485,7 @@
       background: rgba(0,0,0,.84);
     }
     .modal-backdrop.open { display: flex; }
-    .modal { width: min(620px, 100%); max-height: min(760px, 90vh); overflow-y: auto; border: 1px solid var(--signal); background: var(--panel); }
+    .modal { width: min(620px, 100%); max-height: min(760px, 90vh); max-height: min(760px, 90dvh); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; border: 1px solid var(--signal); background: var(--panel); }
     .modal-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid var(--line); }
     .modal-head h2 { margin: 0; font-size: 16px; }
     .modal-body { padding: 16px; }
@@ -530,7 +532,8 @@
     button.trade-asset.selected { border-left: 2px solid var(--signal); background: #171407; }
     .trade-asset:hover { background: #12130e; }
     .trade-asset.selected { padding-left: 12px; border-left: 2px solid var(--signal); background: #171407; }
-    .trade-asset input { width: 18px; height: 18px; accent-color: var(--signal); }
+    .trade-select-mark { display: grid !important; place-items: center; width: 22px; height: 22px; margin: 0 !important; border: 1px solid var(--line-strong); border-radius: 7px; color: var(--muted) !important; background: #ffffff; font-size: 12px !important; font-weight: 900; }
+    .trade-asset.selected .trade-select-mark { border-color: var(--signal); color: #ffffff !important; background: var(--signal); }
     .trade-asset strong, .trade-asset span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .trade-asset span { margin-top: 4px; color: var(--muted); font-size: 9px; }
     .trade-asset b { color: var(--signal); font-size: 16px; }
@@ -570,7 +573,7 @@
 
     .start-screen { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 18px; background: #000; }
     .start-screen.hidden { display: none; }
-    .start-panel { width: min(860px, 100%); max-height: calc(100vh - 36px); min-width: 0; overflow-x: hidden; overflow-y: auto; border: 1px solid var(--signal); background: var(--panel); }
+    .start-panel { width: min(860px, 100%); max-height: calc(100vh - 36px); max-height: calc(100dvh - 36px); min-width: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; border: 1px solid var(--signal); background: var(--panel); }
     .start-title { padding: 20px; border-bottom: 1px solid var(--line); }
     .start-title h1 { margin: 0 0 10px; font-size: clamp(34px, 9vw, 76px); line-height: .88; letter-spacing: -.07em; }
     .start-title p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
@@ -2523,7 +2526,7 @@
       $('#seasonDetails').classList.toggle('is-collapsed',!expanded);
       $('#seasonDetailsButton').setAttribute('aria-expanded',String(expanded));
       $('#seasonDetailsButton').textContent=expanded?'收起详细管理':'展开详细管理';
-      if (expanded&&scroll) $('#seasonDetails').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+      if (expanded&&scroll) $('#seasonDetails').scrollIntoView({behavior:'auto',block:'start'});
     }
 
     function autoSetRotation() {
@@ -2757,7 +2760,7 @@
       $('#tradeTeamName').textContent=team?.name||'选择球队';
       $('#tradeTeamRating').textContent=team?`${franchiseInfo(team.id).conference} · 球队实力 ${Math.round(rosterRating(team.roster))}`:'点此打开球队列表';
       $('#tradeTeamMotive').innerHTML=strategy?`<span class="trade-motive">${strategy.label}</span> · ${strategy.note}`:'选择谈判球队';
-      const playerAsset=(p,side,selected)=>`<label class="trade-asset ${selected?'selected':''}"><input type="checkbox" data-trade-${side}="${p.id}" ${selected?'checked':''} ${open?'':'disabled'}><span class="player-identity">${playerAvatarMarkup(p)}<span class="player-identity-copy"><strong>${p.name}${p.tradeRequest?' · 申请交易':''}</strong><span>${p.position} · ${p.age}岁 · ${money(p.salary)}${side==='offer'?` · 士气${Math.round(p.morale||70)}`:''}</span></span></span><b>${p.ovr}</b></label>`;
+      const playerAsset=(p,side,selected)=>`<button class="trade-asset ${selected?'selected':''}" type="button" data-trade-${side}="${p.id}" aria-pressed="${selected}" ${open?'':'disabled'}><span class="trade-select-mark" aria-hidden="true">${selected?'✓':'＋'}</span><span class="player-identity">${playerAvatarMarkup(p)}<span class="player-identity-copy"><strong>${p.name}${p.tradeRequest?' · 申请交易':''}</strong><span>${p.position} · ${p.age}岁 · ${money(p.salary)}${side==='offer'?` · 士气${Math.round(p.morale||70)}`:''}</span></span></span><b>${p.ovr}</b></button>`;
       const ownsExtraFirst=(state.bonusPicks||0)>0 || (state.pendingBonusPicks||[]).length>0;
       $('#tradeUserAssets').innerHTML=[...state.roster].sort((a,b)=>b.ovr-a.ovr).map(p=>playerAsset(p,'offer',center.offerIds.includes(p.id))).join('')+`<button class="trade-asset pick-asset ${center.offerPick?'selected':''}" id="tradeOfferPick" type="button" ${open&&hasTradeableFirst()?'':'disabled'}><i class="rotation-rank">1ST</i><span><strong>${state.year+1}年未来首轮签</strong><span>${hasTradeableFirst()?(ownsExtraFirst?'来自其他球队的额外首轮':'你方自有首轮 · 顺位未知'):'本年首轮签已经送出'}</span></span><b>PICK</b></button>`;
       $('#tradeTargetAssets').innerHTML=team?[...team.roster].sort((a,b)=>b.ovr-a.ovr).map(p=>playerAsset(p,'target',center.targetIds.includes(p.id))).join('')+`<button class="trade-asset pick-asset ${center.targetPick?'selected':''}" id="tradeTargetPick" type="button" ${open&&team.futurePicks>0?'':'disabled'}><i class="rotation-rank">1ST</i><span><strong>${state.year+1}年未来首轮签</strong><span>${team.name}自有首轮 · 顺位未知</span></span><b>PICK</b></button>`:'<div class="season-empty">没有可用球队。</div>';
@@ -2780,8 +2783,8 @@
       $('#mobileTradeText').textContent=`送出${outgoing.length}名球员${center.offerPick?'＋首轮签':''} · 得到${incoming.length}名球员${center.targetPick?'＋首轮签':''}`;
       $('#mobileTradeSubmitButton').textContent=$('#tradeSubmitButton').textContent;
       $('#mobileTradeSubmitButton').disabled=!open;
-      $$('[data-trade-offer]').forEach(input=>input.addEventListener('change',()=>toggleTradeAsset('offerIds',input.dataset.tradeOffer)));
-      $$('[data-trade-target]').forEach(input=>input.addEventListener('change',()=>toggleTradeAsset('targetIds',input.dataset.tradeTarget)));
+      $$('[data-trade-offer]').forEach(button=>button.addEventListener('click',()=>toggleTradeAsset('offerIds',button.dataset.tradeOffer)));
+      $$('[data-trade-target]').forEach(button=>button.addEventListener('click',()=>toggleTradeAsset('targetIds',button.dataset.tradeTarget)));
       $('#tradeOfferPick').addEventListener('click',()=>{center.offerPick=!center.offerPick;if(center.offerPick&&ownsExtraFirst)center.offerPickProtection=state.pendingBonusPicks[0]?.protection||'unprotected';center.response=null;save(false);render();});
       $('#tradeTargetPick').addEventListener('click',()=>{center.targetPick=!center.targetPick;center.response=null;save(false);render();});
       $('#tradeTeamTrigger').addEventListener('click',openTradeTeamPicker);
@@ -2918,7 +2921,7 @@
         </div>`).join('') : '<div class="career-empty">自由市场已经没有合适球员。</div>';
       $$('[data-sign]').forEach(btn => btn.addEventListener('click', () => signPlayer(btn.dataset.sign)));
       $$('[data-market-details]').forEach(btn => btn.addEventListener('click', () => showPlayerDetails(btn.dataset.marketDetails)));
-      $('#marketToggleButton').onclick=()=>{showAllMarketPlayers=!showAllMarketPlayers;renderMarket();};
+      $('#marketToggleButton').addEventListener('click',()=>{showAllMarketPlayers=!showAllMarketPlayers;renderMarket();});
     }
 
     function renderDraft() {
@@ -3080,6 +3083,7 @@
     }
 
     function realTradeOffers(outgoing) {
+      if(!outgoing)return [];
       const outgoingValue = tradeValue(outgoing);
       const pool = state.aiTeams.flatMap(team => team.roster.map(player => ({player,team})))
         .filter(item => item.player.ovr >= 70 && item.team.roster.length > 5);
@@ -3088,7 +3092,7 @@
       const veteran = pool.filter(item => item.player.age >= 26 && Math.abs(tradeValue(item.player)-outgoingValue) <= 6)
         .sort((a,b) => Math.abs(outgoingValue-tradeValue(a.player))-Math.abs(outgoingValue-tradeValue(b.player)))[0];
       const offers = [];
-      if (young) offers.push({...young,picks:1,label:`${young.team.name}：年轻球员＋未来首轮`});
+      if (young&&(young.team.futurePicks||0)>0) offers.push({...young,picks:1,label:`${young.team.name}：年轻球员＋未来首轮`});
       if (veteran && veteran.player.id !== young?.player.id) offers.push({...veteran,picks:0,label:`${veteran.team.name}：同档即战力互换`});
       return offers;
     }
@@ -3113,7 +3117,7 @@
         state.roster.push(offer.player);
         offer.team.roster = offer.team.roster.filter(p => p.id !== offer.player.id);
         offer.team.roster.push(outgoing);
-        if (offer.picks) state.bonusPicks = (state.bonusPicks || 0) + offer.picks;
+        if (offer.picks) { state.bonusPicks = (state.bonusPicks || 0) + offer.picks; offer.team.futurePicks=Math.max(0,(offer.team.futurePicks||0)-offer.picks); }
         state.lockerRoom.chemistry=clamp(state.lockerRoom.chemistry+(wasRequested?3:-2),0,100);
         if (state.lockerRoom.pendingEvent?.playerId===outgoing.id) state.lockerRoom.pendingEvent=null;
         spendAction();
@@ -3591,7 +3595,7 @@
       $$('.bottom-nav [data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === name));
       $('#mobileMoreButton').classList.toggle('active',['staff','draft','league','career'].includes(name));
       setMobileMore(false,false);
-      if (window.innerWidth <= 560) target.scrollIntoView({ behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth', block:'start' });
+      if (window.innerWidth <= 560) target.scrollIntoView({ behavior:'auto', block:'start' });
     }
 
     function setMobileMore(open,restoreFocus=true) {
@@ -3668,14 +3672,19 @@
     } catch { state=null; return false; } }
     function resetGame() { try { localStorage.removeItem(STORAGE_KEY); } catch {} state = null; usedNames.clear(); closeModal(); showEraStep(); $('#startScreen').classList.remove('hidden'); }
 
-    function renderTeamChoices() {
-      const query=($('#teamSearch')?.value||'').trim().toLowerCase();
+    function matchingTeams(query='',filter=activeTeamFilter) {
+      query=String(query).trim().toLowerCase();
       const featuredIds=new Set(['lal','gsw','bkn','bos','dal','okc']);
-      const filtered=teams.filter(team=>{
+      return teams.filter(team=>{
         const conference=franchiseInfo(team.id).conference;
-        const categoryMatch=activeTeamFilter==='all'||(activeTeamFilter==='featured'&&featuredIds.has(team.id))||(activeTeamFilter==='east'&&conference==='东部')||(activeTeamFilter==='west'&&conference==='西部')||(activeTeamFilter==='rebuild'&&team.base<=78);
+        const categoryMatch=Boolean(query)||filter==='all'||(filter==='featured'&&featuredIds.has(team.id))||(filter==='east'&&conference==='东部')||(filter==='west'&&conference==='西部')||(filter==='rebuild'&&team.base<=78);
         return categoryMatch&&(!query||team.name.toLowerCase().includes(query)||team.mark.toLowerCase().includes(query));
       });
+    }
+
+    function renderTeamChoices() {
+      const query=($('#teamSearch')?.value||'').trim().toLowerCase();
+      const filtered=matchingTeams(query);
       $('#teamChoices').innerHTML=filtered.length?filtered.map(t=>`<button class="team-choice" data-team="${t.id}"><span class="team-mark">${teamAvatarMarkup(t)}</span><strong>${t.name}</strong><span>${t.note}</span><span class="difficulty">难度：${t.difficulty}</span></button>`).join(''):'<div class="career-empty">没有匹配的球队。</div>';
       $$('[data-team]').forEach(btn=>btn.addEventListener('click',()=>startTeam(btn.dataset.team)));
     }

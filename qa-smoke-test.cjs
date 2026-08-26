@@ -60,6 +60,11 @@ const tests = String.raw`
     }
   });
 
+  test('球队搜索不会被默认推荐筛选阻挡', () => {
+    const matches = matchingTeams('公牛', 'featured');
+    assert(matches.length === 1 && matches[0].id === 'chi', '推荐筛选下搜索非推荐球队失败');
+  });
+
   test('2020—2035选秀名单完整且属性合法', () => {
     for (let year = 2020; year <= 2035; year++) {
       usedNames.clear();
@@ -143,6 +148,7 @@ const tests = String.raw`
 
   test('虎扑内嵌页的所有下拉操作均已替换为游戏内按钮', () => {
     assert(!/<select\b/i.test(${JSON.stringify(html)}), '页面仍包含可能失效的系统下拉框');
+    assert(!/<input[^>]+type=["']checkbox/i.test(${JSON.stringify(html)}), '交易页仍包含可能失效的系统勾选框');
     state = newState(teams.find(team => team.id === 'lal'), eras[0]);
     setTacticOption('pace', 'fast');
     setTrainingOption('trainingFocus', 'shooting');
@@ -151,6 +157,31 @@ const tests = String.raw`
     assert(state.tactics.pace === 'fast', '战术按钮没有更新比赛节奏');
     assert(state.staff.trainingFocus === 'shooting' && state.staff.trainingIntensity === 'high', '训练按钮没有更新设置');
     assert(state.tradeCenter.offerPickProtection === 'top3', '选秀权保护按钮没有更新设置');
+  });
+
+  test('交易球员整卡按钮支持选择、取消与最多两人限制', () => {
+    state = newState(teams.find(team => team.id === 'lal'), eras[0]);
+    const ids = state.roster.slice(0,3).map(player => player.id);
+    toggleTradeAsset('offerIds', ids[0]);
+    toggleTradeAsset('offerIds', ids[1]);
+    toggleTradeAsset('offerIds', ids[2]);
+    assert(state.tradeCenter.offerIds.length === 2 && !state.tradeCenter.offerIds.includes(ids[2]), '交易筹码超过两人限制');
+    toggleTradeAsset('offerIds', ids[0]);
+    assert(state.tradeCenter.offerIds.length === 1 && !state.tradeCenter.offerIds.includes(ids[0]), '交易筹码无法取消选择');
+  });
+
+  test('空阵容、交易截止日与选秀权资产边界安全', () => {
+    state = newState(teams.find(team => team.id === 'lal'), eras[0]);
+    state.roster = []; state.rotationOrder = [];
+    startRegularSeason();
+    assert(state.roster.length === 7 && state.rotationOrder.length === 7, '空阵容开赛没有自动补齐七人');
+    assert(Object.keys(state.season.playerStats).length === 7, '困难特例球员没有生成赛季数据');
+    const marketBefore = state.market.length, rosterBefore = state.roster.length, actionsBefore = state.actions;
+    state.season.deadlinePassed = true;
+    signPlayer(state.market[0]?.id);
+    assert(state.market.length === marketBefore && state.roster.length === rosterBefore && state.actions === actionsBefore, '交易截止日后仍能签约');
+    state.aiTeams.forEach(team => team.futurePicks = 0);
+    assert(state.roster.every(player => realTradeOffers(player).every(offer => !offer.picks)), '无首轮签球队仍能报价首轮签');
   });
 
   test('存档JSON往返与载入迁移', () => {
