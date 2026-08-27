@@ -34,7 +34,7 @@ const TEAM_LOGOS = ${JSON.stringify(teamLogos)};
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-    const teamLogoMatch = url.pathname.match(/^\/assets\/team-logos\/([A-Z]{2,3}\.svg)$/);
+    const teamLogoMatch = url.pathname.match(/^\\/assets\\/team-logos\\/([A-Z]{2,3}\\.svg)$/);
     if (teamLogoMatch && TEAM_LOGOS[teamLogoMatch[1]]) return new Response(TEAM_LOGOS[teamLogoMatch[1]], { headers: { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' } });
     const asset = url.pathname === '/' || url.pathname === '/index.html'
       ? { body: HTML, type: 'text/html; charset=utf-8' }
