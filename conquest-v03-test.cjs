@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const context={globalThis:{},console};context.window=context.globalThis;vm.createContext(context);
-for(const file of ['hex-engine.js','hex-v02.js','hex-v021.js','hex-v022.js','hex-v03.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
-const H=context.globalThis.HexEngine,V=context.globalThis.HexV02,Y=context.globalThis.HexV03;
+for(const file of ['hex-engine.js','hex-v02.js','hex-v021.js','hex-v022.js','hex-v03.js','conquest-bosses.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
+const H=context.globalThis.HexEngine,V=context.globalThis.HexV02,Y=context.globalThis.HexV03,B=context.globalThis.HexConquestBosses;
 const packA=Y.initialPack(H,V,'HX-TEST-0001'),packB=Y.initialPack(H,V,'HX-TEST-0001');
 assert.deepStrictEqual(packA.map(p=>p.id),packB.map(p=>p.id),'相同Seed应复现初始包');
 assert.equal(packA.length,5,'初始包必须有5张');
@@ -17,6 +17,23 @@ const legendRate=legends/10000;assert(legendRate>=.08&&legendRate<=.12,`初始LE
 const trained=Y.trainPlayer(packA[0],'DEFENSE');assert(trained.attributes.perimeterDefense>packA[0].attributes.perimeterDefense,'训练必须改变具体球员属性');assert.equal(packA[0].training.length,0,'训练不能污染原球员对象');
 const html=fs.readFileSync('conquest.html','utf8'),ui=fs.readFileSync('conquest-ui.js','utf8');
 assert(html.includes('conquest-ui.js')&&html.includes('viewport-fit=cover'),'历史征服页面资源或安全区配置缺失');
+assert(html.includes('conquest-bosses.js'),'Boss数据模块未接入历史征服页面');
 assert(ui.includes('nba_hex_conquest_v03')&&!ui.includes('nba_hex_dynasty_v01'),'历史征服必须使用独立存档');
 assert(ui.includes('boss_mid')&&ui.includes('boss_clutch')&&ui.includes('data-strategy'),'Boss必须包含赛前、比赛中和第四节决策');
+assert.equal(B.BOSSES.length,3,'本轮应有活塞、火箭、马刺3个可玩Boss');
+assert.equal(B.BOSSES.map(b=>b.id).join(','),'pistons04,rockets95,spurs14','Boss顺序错误');
+assert.equal(new Set(B.BOSSES.map(b=>b.id)).size,3,'Boss ID必须唯一');
+for(const boss of B.BOSSES){
+  assert.equal(boss.roster.length,5,`${boss.shortName}必须展示5人核心阵容`);
+  assert.equal(boss.strategies.length,3,`${boss.shortName}必须有3个赛前策略`);
+  assert.equal(boss.midChoices.length,3,`${boss.shortName}必须有3个比赛中决策`);
+  assert.equal(boss.clutchChoices.length,3,`${boss.shortName}必须有3个末节决策`);
+  assert(boss.rewardTags.length>=3,`${boss.shortName}奖励池标签不足`);
+  assert(H.players.filter(p=>p.tags.some(tag=>boss.rewardTags.includes(tag))).length>=3,`${boss.shortName}奖励池不足3人`);
+}
+assert(B.BOSSES.every((boss,i)=>i===0||boss.power>B.BOSSES[i-1].power),'Boss强度必须逐关上升');
+const fresh=B.initialProgress();assert(B.isUnlocked('pistons04',fresh)&&!B.isUnlocked('rockets95',fresh)&&!B.isUnlocked('spurs14',fresh),'初始解锁顺序错误');
+fresh.bosses.pistons04.cleared=true;assert(B.isUnlocked('rockets95',fresh)&&!B.isUnlocked('spurs14',fresh),'火箭解锁条件错误');
+fresh.bosses.rockets95.cleared=true;assert(B.isUnlocked('spurs14',fresh),'马刺解锁条件错误');
+const legacy=B.migrateProgress({pistons:{cleared:true,stars:2,attempts:4}});assert(legacy.bosses.pistons04.cleared&&legacy.bosses.pistons04.stars===2&&legacy.bosses.rockets95.attempts===0,'旧版活塞进度迁移失败');
 console.log(`V0.3 conquest prototype QA passed. Initial LEGEND rate ${(legendRate*100).toFixed(2)}%.`);

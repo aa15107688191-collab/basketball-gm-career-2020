@@ -12,6 +12,7 @@ const hexV02 = fs.readFileSync(path.join(root, 'hex-v02.js'), 'utf8');
 const hexV021 = fs.readFileSync(path.join(root, 'hex-v021.js'), 'utf8');
 const hexV022 = fs.readFileSync(path.join(root, 'hex-v022.js'), 'utf8');
 const hexV03 = fs.readFileSync(path.join(root, 'hex-v03.js'), 'utf8');
+const conquestBosses = fs.readFileSync(path.join(root, 'conquest-bosses.js'), 'utf8');
 const hexAnalytics = fs.readFileSync(path.join(root, 'hex-analytics.js'), 'utf8');
 const hexUi = fs.readFileSync(path.join(root, 'hex-ui.js'), 'utf8');
 const conquestUi = fs.readFileSync(path.join(root, 'conquest-ui.js'), 'utf8');
@@ -32,6 +33,7 @@ const HEX_V02 = ${JSON.stringify(hexV02)};
 const HEX_V021 = ${JSON.stringify(hexV021)};
 const HEX_V022 = ${JSON.stringify(hexV022)};
 const HEX_V03 = ${JSON.stringify(hexV03)};
+const CONQUEST_BOSSES = ${JSON.stringify(conquestBosses)};
 const HEX_ANALYTICS = ${JSON.stringify(hexAnalytics)};
 const HEX_UI = ${JSON.stringify(hexUi)};
 const CONQUEST_UI = ${JSON.stringify(conquestUi)};
@@ -64,6 +66,8 @@ export default {
               ? { body: HEX_V022, type: 'application/javascript; charset=utf-8' }
             : url.pathname === '/hex-v03.js'
               ? { body: HEX_V03, type: 'application/javascript; charset=utf-8' }
+            : url.pathname === '/conquest-bosses.js'
+              ? { body: CONQUEST_BOSSES, type: 'application/javascript; charset=utf-8' }
               : url.pathname === '/hex-analytics.js'
                 ? { body: HEX_ANALYTICS, type: 'application/javascript; charset=utf-8' }
             : url.pathname === '/hex-ui.js'
