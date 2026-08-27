@@ -18,11 +18,11 @@
     .player-identity{display:flex;align-items:center;gap:12px;min-width:0}.player-identity>span:last-child{min-width:0}.player-identity b,.player-identity small{display:block}.player-identity b{overflow:hidden;color:var(--text);font-size:17px;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.player-identity small{margin-top:4px;color:var(--cyan);font-size:9px;font-weight:800}.player-identity.compact{gap:9px}.player-identity.compact b{font-size:12px}
     .player-card>p{margin-top:12px}.lineup-card>p{margin:8px 0 0;color:var(--muted);font-size:9px}.core-chip .player-avatar{margin:0 auto 8px}.award-list li{display:flex;align-items:center;gap:10px}.award-list li>span{display:flex;flex-direction:column;gap:2px}.award-list li b{color:var(--text);font-size:12px}.collection-item:has(.player-avatar){display:flex;align-items:center;gap:10px}.collection-item:has(.player-avatar)>div{min-width:0}
   </style>
-  <link rel="stylesheet" href="./hex-v02.css?v=0223">
+  <link rel="stylesheet" href="./hex-v02.css?v=0224">
 </head>
 <body>
   <main class="app">
-    <header class="top"><div><div class="eyebrow">NBA HEX DYNASTY</div><h1 class="brand">海克斯王朝</h1></div><a class="back" href="./" aria-label="返回游戏主界面"><span aria-hidden="true">←</span> 返回主界面</a></header>
+    <header class="top"><div><div class="eyebrow">NBA HEX DYNASTY</div><h1 class="brand">海克斯王朝</h1></div><div class="top-actions"><a class="lobby-link" data-lobby href="./">游戏大厅</a><button class="back hidden" type="button" data-context-back aria-label="返回上一层"><span aria-hidden="true">←</span><span data-back-label>返回</span></button></div></header>
     <div id="screen"></div>
   </main>
   <div class="toast" id="toast" role="status"></div>
@@ -87,6 +87,6 @@
     function exportShareCard(){const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1440;const c=canvas.getContext('2d'),r=state.result;c.fillStyle='#0b0e14';c.fillRect(0,0,1080,1440);c.fillStyle='#39d9ff';c.font='700 42px sans-serif';c.fillText('NBA HEX DYNASTY',70,100);c.fillStyle='#f5f7fb';c.font='900 150px sans-serif';c.fillText(`${state.season.wins}-${state.season.losses}`,70,290);c.fillStyle=r.champion?'#f1bd55':'#f5f7fb';c.font='800 62px sans-serif';c.fillText(r.playoffResult,70,390);c.fillStyle='#98a4b8';c.font='32px sans-serif';c.fillText('核心阵容',70,500);c.fillStyle='#f5f7fb';c.font='700 38px sans-serif';state.coreIds.forEach((id,i)=>c.fillText(`${i+1}. ${player(id).season} ${player(id).name}`,70,570+i*65));c.fillStyle='#98a4b8';c.font='32px sans-serif';c.fillText('海克斯',70,800);c.fillStyle='#f5f7fb';c.font='700 34px sans-serif';state.hexIds.forEach((id,i)=>c.fillText(`◆ ${hex(id).name}`,70,865+i*58));c.fillStyle='#39d9ff';c.font='700 38px sans-serif';c.fillText(r.tags.join(' · '),70,1180);c.fillStyle='#98a4b8';c.font='28px sans-serif';c.fillText(`进攻 ${r.ratings.offense}  防守 ${r.ratings.defense}  空间 ${r.ratings.space}`,70,1280);const url=canvas.toDataURL('image/png'),preview=document.createElement('div');preview.className='share-preview';preview.innerHTML=`<div class="share-preview-card"><img src="${url}" alt="NBA海克斯王朝战绩图"><p>手机端可长按图片保存，或点击下方下载。</p><div class="share-preview-actions"><a class="primary" href="${url}" download="NBA海克斯王朝战绩.png">下载图片</a><button class="ghost" type="button">关闭</button></div></div>`;preview.querySelector('button').addEventListener('click',()=>preview.remove());document.body.appendChild(preview);toast('战绩图已生成');}
     state=load();if(state.phase==='history')state.phase='home';render();
   </script>
-  <script src="./hex-ui.js?v=0223"></script>
+  <script src="./hex-ui.js?v=0224"></script>
 </body>
 </html>

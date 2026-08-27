@@ -29,6 +29,7 @@ const html=fs.readFileSync('./hex.html','utf8'),ui=fs.readFileSync('./hex-ui.js'
 assert(html.includes('hex-v022.js'));
 for(const team of X.teams)assert(fs.existsSync(`./assets/team-logos/${team.id}.svg`),`missing ${team.id} logo`);
 assert(ui.includes('renderTeamSelect')&&ui.includes('renderScout')&&ui.includes('renderLeaders')&&ui.includes('WHY YOU'));
+assert(ui.includes('contextBack')&&ui.includes('updateTopNavigation'),'secondary screens need contextual back navigation');
 assert(!ui.includes('localStorage.clear'),'old saves must never be cleared');
 assert(css.includes('@media(max-width:560px)')&&css.includes('.scout-roster'));
 new Function(fs.readFileSync('./hex-v022.js','utf8'));new Function(ui);
