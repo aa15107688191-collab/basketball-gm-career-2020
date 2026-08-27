@@ -4,9 +4,12 @@
   "version": "1.0.0",
   "scripts": {
     "build": "node build.cjs",
-    "test": "node qa-smoke-test.cjs && node hex-qa-test.cjs && node hex-v02-test.cjs && node hex-v021-test.cjs",
+    "test": "node qa-smoke-test.cjs && node hex-qa-test.cjs && node hex-v02-test.cjs && node hex-v021-test.cjs && node hex-v022-test.cjs",
     "simulate": "node hex-simulate.cjs",
     "simulate:v02": "node hex-simulate-v02.cjs",
-    "simulate:v021": "node hex-simulate-v021.cjs"
+    "simulate:v021": "node hex-simulate-v021.cjs",
+    "simulate:v022": "node hex-simulate-v022.cjs",
+    "validate:nba-history": "node validate-nba-history.cjs",
+    "validate:historical-rosters": "node validate-nba-history.cjs"
   }
 }

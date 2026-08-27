@@ -9,9 +9,12 @@ const hexEngine = fs.readFileSync(path.join(root, 'hex-engine.js'), 'utf8');
 const hexAvatars = fs.readFileSync(path.join(root, 'hex-avatars.js'), 'utf8');
 const hexV02 = fs.readFileSync(path.join(root, 'hex-v02.js'), 'utf8');
 const hexV021 = fs.readFileSync(path.join(root, 'hex-v021.js'), 'utf8');
+const hexV022 = fs.readFileSync(path.join(root, 'hex-v022.js'), 'utf8');
 const hexAnalytics = fs.readFileSync(path.join(root, 'hex-analytics.js'), 'utf8');
 const hexUi = fs.readFileSync(path.join(root, 'hex-ui.js'), 'utf8');
 const hexV02Css = fs.readFileSync(path.join(root, 'hex-v02.css'), 'utf8');
+const teamLogoDir = path.join(root, 'assets', 'team-logos');
+const teamLogos = Object.fromEntries(fs.readdirSync(teamLogoDir).filter(name => name.endsWith('.svg')).map(name => [name, fs.readFileSync(path.join(teamLogoDir, name), 'utf8')]));
 const serverDir = path.join(root, 'dist', 'server');
 fs.mkdirSync(serverDir, { recursive: true });
 
@@ -22,13 +25,17 @@ const HEX_ENGINE = ${JSON.stringify(hexEngine)};
 const HEX_AVATARS = ${JSON.stringify(hexAvatars)};
 const HEX_V02 = ${JSON.stringify(hexV02)};
 const HEX_V021 = ${JSON.stringify(hexV021)};
+const HEX_V022 = ${JSON.stringify(hexV022)};
 const HEX_ANALYTICS = ${JSON.stringify(hexAnalytics)};
 const HEX_UI = ${JSON.stringify(hexUi)};
 const HEX_V02_CSS = ${JSON.stringify(hexV02Css)};
+const TEAM_LOGOS = ${JSON.stringify(teamLogos)};
 
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+    const teamLogoMatch = url.pathname.match(/^\/assets\/team-logos\/([A-Z]{2,3}\.svg)$/);
+    if (teamLogoMatch && TEAM_LOGOS[teamLogoMatch[1]]) return new Response(TEAM_LOGOS[teamLogoMatch[1]], { headers: { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=31536000, immutable', 'x-content-type-options': 'nosniff' } });
     const asset = url.pathname === '/' || url.pathname === '/index.html'
       ? { body: HTML, type: 'text/html; charset=utf-8' }
       : url.pathname === '/gm.html'
@@ -43,6 +50,8 @@ export default {
             ? { body: HEX_V02, type: 'application/javascript; charset=utf-8' }
             : url.pathname === '/hex-v021.js'
               ? { body: HEX_V021, type: 'application/javascript; charset=utf-8' }
+            : url.pathname === '/hex-v022.js'
+              ? { body: HEX_V022, type: 'application/javascript; charset=utf-8' }
               : url.pathname === '/hex-analytics.js'
                 ? { body: HEX_ANALYTICS, type: 'application/javascript; charset=utf-8' }
             : url.pathname === '/hex-ui.js'
