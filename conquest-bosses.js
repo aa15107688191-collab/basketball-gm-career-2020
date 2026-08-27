@@ -32,7 +32,7 @@
       id:'rockets95',number:2,chapter:'第一章 · 铁血与内线',year:1995,shortName:'1995 火箭',chineseName:'1995 休斯敦火箭',
       subtitle:'西部第六夺冠 · 内外双核的卫冕奇迹',danger:3,power:89,theme:'梦幻脚步',bossName:'哈基姆·奥拉朱旺',
       mechanicTitle:'一星四射',mechanicDescription:'奥拉朱旺吸引包夹后会迅速找到外线射手。盲目夹击会被三分惩罚，单防又可能让内线失守。',
-      roster:[['肯尼·史密斯','PG'],['克莱德·德雷克斯勒','SG'],['罗伯特·霍里','SF'],['哈基姆·奥拉朱旺','C'],['萨姆·卡塞尔','G']],
+      roster:[['肯尼·史密斯','PG'],['克莱德·德雷克斯勒','SG'],['罗伯特·霍里','SF'],['哈基姆·奥拉朱旺','C'],['萨姆·卡塞尔','G'],['弗农·马克斯维尔','SG'],['马里奥·埃利','SF'],['查基·布朗','PF']],
       strategies:[
         {id:'front',title:'绕前限制接球',description:'用团队防守延误低位接球，考验护框与协防。',stats:['defense','rebound'],thresholds:[85,82],bonus:.046},
         {id:'single',title:'坚持内线单防',description:'不轻易漏掉射手，要求中锋能扛住梦幻脚步。',stat:'defense',threshold:87,bonus:.042},
@@ -50,7 +50,7 @@
         {id:'attackBig',title:'挡拆点名中锋',description:'让奥拉朱旺反复移动，消耗他的护框体能。',stats:['playmaking','space'],thresholds:[84,84],bonus:.044},
         {id:'crashGlass',title:'全员冲抢篮板',description:'争取二次进攻，也承担退防风险。',stat:'rebound',threshold:84,bonus:.036,ownFinal:2,oppFinal:1}
       ],
-      star2Max:108,star3:{type:'strategy',id:'front',description:'使用“绕前限制接球”取胜'},
+      star2Max:108,star2Description:'将奥拉朱旺限制在30分以下',star3:{type:'noLegendCenter',description:'不使用传奇中锋通关'},
       intel:['火箭的外线火力来自奥拉朱旺吸引协防后的分球。','延迟夹击比开场就包夹更有效；同时必须有人盯住两个底角。'],
       winText:'终结1995休斯敦火箭的卫冕奇迹',lossText:'梦幻脚步再次主宰了关键回合',rewardName:'火箭内线球员包',rewardDescription:'从低位、护框或篮板型球员卡中选择1张。',rewardTags:['post','rim','rebound']
     },
@@ -58,7 +58,7 @@
       id:'spurs14',number:3,chapter:'第二章 · 团队篮球',year:2014,shortName:'2014 马刺',chineseName:'2014 圣安东尼奥马刺',
       subtitle:'总决赛冠军 · 极致传导与团队执行力',danger:4,power:91,theme:'美丽篮球',bossName:'蒂姆·邓肯',
       mechanicTitle:'多一次传球',mechanicDescription:'马刺会持续寻找更好的机会。第一次轮转成功并不等于防住，漏掉弱侧就会触发连续三分。',
-      roster:[['托尼·帕克','PG'],['丹尼·格林','SG'],['科怀·伦纳德','SF'],['蒂姆·邓肯','PF/C'],['鲍里斯·迪奥','F/C']],
+      roster:[['托尼·帕克','PG'],['丹尼·格林','SG'],['科怀·伦纳德','SF'],['蒂姆·邓肯','PF/C'],['鲍里斯·迪奥','F/C'],['马努·吉诺比利','G'],['帕蒂·米尔斯','PG'],['蒂亚戈·斯普利特','C']],
       strategies:[
         {id:'switch',title:'无限换防外线',description:'切断连续传导，但要求阵容具备换防尺寸。',stats:['defense','size'],thresholds:[86,82],bonus:.046},
         {id:'deny',title:'封锁弱侧底角',description:'放帕克部分中距离，优先不让射手起势。',stat:'perimeterDefense',threshold:85,bonus:.042},
@@ -76,7 +76,7 @@
         {id:'huntParker',title:'连续点名帕克',description:'用强侧挡拆逼马刺改变轮换。',stats:['creator','space'],thresholds:[85,84],bonus:.04,ownFinal:2},
         {id:'extraPass',title:'坚持多传一次',description:'拒绝仓促单打，考验组织和无球能力。',stats:['playmaking','space'],thresholds:[86,85],bonus:.046}
       ],
-      star2Max:110,star3:{type:'combo',strategy:'switch',mid:'switchAll',description:'用换防策略贯穿全场并取胜'},
+      star2Max:110,star2Description:'Beautiful Game完整触发不超过1次',star3:{type:'twoCommonStarters',description:'至少2名ROLE/STARTER首发通关'},
       intel:['马刺的第一选择往往只是诱饵，真正威胁来自第二次转移。','封住弱侧底角后，马刺会让迪奥在高位策应；换防阵容更稳定。'],
       winText:'击败2014圣安东尼奥马刺',lossText:'马刺用多一次传球拆开了防线',rewardName:'马刺团队球员包',rewardDescription:'从组织、无球、投射或全能型球员卡中选择1张。',rewardTags:['playmaker','offball','shooting','multi']
     }

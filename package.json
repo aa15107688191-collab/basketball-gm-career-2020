@@ -9,6 +9,7 @@
     "simulate:v02": "node hex-simulate-v02.cjs",
     "simulate:v021": "node hex-simulate-v021.cjs",
     "simulate:v022": "node hex-simulate-v022.cjs",
+    "simulate:conquest-phase2": "node conquest-phase2-simulate.cjs",
     "validate:nba-history": "node validate-nba-history.cjs",
     "validate:historical-rosters": "node validate-nba-history.cjs"
   }

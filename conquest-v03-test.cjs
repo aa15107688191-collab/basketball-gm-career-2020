@@ -11,10 +11,15 @@ assert(packA.some(p=>p.positions.some(x=>x==='SG'||x==='SF')),'初始包必须�
 assert(packA.some(p=>p.positions.some(x=>x==='PF'||x==='C')),'初始包必须有内线');
 assert(Y.budgetUsed(packA)<=30,'初始包不得超过30点预算');
 const profiles=Y.createProfiles(H,V),counts=Object.values(profiles).reduce((a,p)=>(a[p.quality]=(a[p.quality]||0)+1,a),{});
-assert.deepStrictEqual(counts,{ROLE:8,STARTER:12,STAR:10,ALL_NBA:8,LEGEND:2},'40人原型品质数量错误');
+assert.deepStrictEqual(counts,{ROLE:8,STARTER:13,STAR:10,ALL_NBA:8,LEGEND:2},'41人Phase 2品质数量错误');
 let legends=0;for(let i=0;i<10000;i++)if(Y.initialPack(H,V,`HX-SIM-${i}`).some(p=>p.cardQuality==='LEGEND'))legends++;
 const legendRate=legends/10000;assert(legendRate>=.08&&legendRate<=.12,`初始LEGEND率${legendRate}不在8%-12%`);
 const trained=Y.trainPlayer(packA[0],'DEFENSE');assert(trained.attributes.perimeterDefense>packA[0].attributes.perimeterDefense,'训练必须改变具体球员属性');assert.equal(packA[0].training.length,0,'训练不能污染原球员对象');
+assert.equal(Object.keys(Y.TRAINING_PATHS).length,6,'Phase 2必须有6个训练方向');
+assert.equal(Object.keys(Y.PLAYER_HEXES).length,8,'Phase 2必须有8个球员型海克斯');
+assert.equal(Object.keys(Y.AWAKENINGS).length,6,'Phase 2必须有6个觉醒');
+let growing=Y.cardFrom(H,V,Y.playerPool(H).find(p=>p.id==='iguodala15'),profiles);growing=Y.addStarXp(H,growing,2,'测试');assert.equal(growing.stars,2,'2成长进度应升到★★');growing=Y.addStarXp(H,growing,3,'测试');assert.equal(growing.stars,3,'再获得3成长进度应升到★★★');assert(growing.upgradeHistory.some(x=>x.type==='STAR_UP'),'升星必须记录属性成长历史');
+const duplicate=Y.resolveDuplicate(H,growing,'growth');assert.equal(duplicate.trainingPoints,2,'★★★重复卡应自动转为2训练点');
 const html=fs.readFileSync('conquest.html','utf8'),ui=fs.readFileSync('conquest-ui.js','utf8');
 assert(html.includes('conquest-ui.js')&&html.includes('viewport-fit=cover'),'历史征服页面资源或安全区配置缺失');
 assert(html.includes('conquest-bosses.js'),'Boss数据模块未接入历史征服页面');
@@ -24,13 +29,14 @@ assert.equal(B.BOSSES.length,3,'本轮应有活塞、火箭、马刺3个可玩Bo
 assert.equal(B.BOSSES.map(b=>b.id).join(','),'pistons04,rockets95,spurs14','Boss顺序错误');
 assert.equal(new Set(B.BOSSES.map(b=>b.id)).size,3,'Boss ID必须唯一');
 for(const boss of B.BOSSES){
-  assert.equal(boss.roster.length,5,`${boss.shortName}必须展示5人核心阵容`);
+  assert(boss.roster.length>=5,`${boss.shortName}至少必须展示5人核心阵容`);
   assert.equal(boss.strategies.length,3,`${boss.shortName}必须有3个赛前策略`);
   assert.equal(boss.midChoices.length,3,`${boss.shortName}必须有3个比赛中决策`);
   assert.equal(boss.clutchChoices.length,3,`${boss.shortName}必须有3个末节决策`);
   assert(boss.rewardTags.length>=3,`${boss.shortName}奖励池标签不足`);
   assert(H.players.filter(p=>p.tags.some(tag=>boss.rewardTags.includes(tag))).length>=3,`${boss.shortName}奖励池不足3人`);
 }
+assert.equal(B.byId('rockets95').roster.length,8,'火箭必须使用8人Boss阵容');assert.equal(B.byId('spurs14').roster.length,8,'马刺必须使用8人Boss阵容');
 assert(B.BOSSES.every((boss,i)=>i===0||boss.power>B.BOSSES[i-1].power),'Boss强度必须逐关上升');
 const fresh=B.initialProgress();assert(B.isUnlocked('pistons04',fresh)&&!B.isUnlocked('rockets95',fresh)&&!B.isUnlocked('spurs14',fresh),'初始解锁顺序错误');
 fresh.bosses.pistons04.cleared=true;assert(B.isUnlocked('rockets95',fresh)&&!B.isUnlocked('spurs14',fresh),'火箭解锁条件错误');
